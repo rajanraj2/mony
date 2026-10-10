@@ -8,6 +8,7 @@ import '../../../transactions/presentation/screens/transaction_list_screen.dart'
 import '../../../budgets/presentation/screens/budget_screen.dart';
 import '../../../goals/presentation/screens/goals_screen.dart';
 import '../../../budgets/presentation/providers/budget_providers.dart';
+import '../../../analytics/presentation/screens/analytics_screen.dart';
 
 class HomeDashboardScreen extends ConsumerStatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -30,7 +31,7 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
       _DashboardView(isPrivacyMode: _isPrivacyMode, onTogglePrivacy: () => setState(() => _isPrivacyMode = !_isPrivacyMode)),
       const TransactionListScreen(),
       const BudgetScreen(),
-      const GoalsScreen(),
+      const AnalyticsScreen(),
       const _PlaceholderFeatureView(title: 'Settings & AI', sectionNum: 8),
     ];
 
@@ -46,7 +47,7 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
                 NavigationRailDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: Text('Dashboard')),
                 NavigationRailDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long), label: Text('Transactions')),
                 NavigationRailDestination(icon: Icon(Icons.pie_chart_outline), selectedIcon: Icon(Icons.pie_chart), label: Text('Budgets')),
-                NavigationRailDestination(icon: Icon(Icons.flag_outlined), selectedIcon: Icon(Icons.flag), label: Text('Goals')),
+                NavigationRailDestination(icon: Icon(Icons.analytics_outlined), selectedIcon: Icon(Icons.analytics), label: Text('Analytics')),
                 NavigationRailDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings), label: Text('Settings')),
               ],
             ),
@@ -67,7 +68,7 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
           NavigationDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: 'Home'),
           NavigationDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long), label: 'Activity'),
           NavigationDestination(icon: Icon(Icons.pie_chart_outline), selectedIcon: Icon(Icons.pie_chart), label: 'Budgets'),
-          NavigationDestination(icon: Icon(Icons.flag_outlined), selectedIcon: Icon(Icons.flag), label: 'Goals'),
+          NavigationDestination(icon: Icon(Icons.analytics_outlined), selectedIcon: Icon(Icons.analytics), label: 'Analytics'),
           NavigationDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings), label: 'Settings'),
         ],
       ),

@@ -16,6 +16,8 @@ import '../../features/budgets/domain/repositories/budget_repository.dart';
 import '../../features/goals/data/datasources/goal_dao.dart';
 import '../../features/goals/data/repositories/goal_repository_impl.dart';
 import '../../features/goals/domain/repositories/goal_repository.dart';
+import '../../features/analytics/data/repositories/analytics_repository_impl.dart';
+import '../../features/analytics/domain/repositories/analytics_repository.dart';
 
 // Database Singleton
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -64,6 +66,10 @@ final budgetRepositoryProvider = Provider<IBudgetRepository>((ref) {
 
 final goalRepositoryProvider = Provider<IGoalRepository>((ref) {
   return GoalRepositoryImpl(ref.watch(goalDaoProvider));
+});
+
+final analyticsRepositoryProvider = Provider<IAnalyticsRepository>((ref) {
+  return AnalyticsRepositoryImpl(ref.watch(databaseProvider));
 });
 
 // Use Cases
