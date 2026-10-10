@@ -26,6 +26,8 @@ import '../../features/import/domain/repositories/import_repository.dart';
 import '../../features/portfolio/data/datasources/asset_dao.dart';
 import '../../features/portfolio/data/repositories/portfolio_repository_impl.dart';
 import '../../features/portfolio/domain/repositories/portfolio_repository.dart';
+import '../../features/planning/data/repositories/planning_repository_impl.dart';
+import '../../features/planning/domain/repositories/planning_repository.dart';
 
 // Database Singleton
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -101,6 +103,10 @@ final portfolioRepositoryProvider = Provider<IPortfolioRepository>((ref) {
     ref.watch(assetDaoProvider),
     ref.watch(accountDaoProvider),
   );
+});
+
+final planningRepositoryProvider = Provider<IPlanningRepository>((ref) {
+  return PlanningRepositoryImpl();
 });
 
 // Use Cases

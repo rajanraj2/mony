@@ -13,6 +13,7 @@ import '../../../sms/presentation/screens/sms_approval_queue_screen.dart';
 import '../../../sms/presentation/providers/sms_providers.dart';
 import '../../../portfolio/presentation/screens/portfolio_screen.dart';
 import '../../../portfolio/presentation/providers/portfolio_providers.dart';
+import '../../../planning/presentation/screens/wealth_planning_screen.dart';
 
 class HomeDashboardScreen extends ConsumerStatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -36,6 +37,7 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
       const TransactionListScreen(),
       const BudgetScreen(),
       const PortfolioScreen(),
+      const WealthPlanningScreen(),
       const AnalyticsScreen(),
     ];
 
@@ -52,6 +54,7 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
                 NavigationRailDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long), label: Text('Transactions')),
                 NavigationRailDestination(icon: Icon(Icons.pie_chart_outline), selectedIcon: Icon(Icons.pie_chart), label: Text('Budgets')),
                 NavigationRailDestination(icon: Icon(Icons.trending_up_outlined), selectedIcon: Icon(Icons.trending_up), label: Text('Portfolio')),
+                NavigationRailDestination(icon: Icon(Icons.psychology_outlined), selectedIcon: Icon(Icons.psychology), label: Text('Planning')),
                 NavigationRailDestination(icon: Icon(Icons.analytics_outlined), selectedIcon: Icon(Icons.analytics), label: Text('Analytics')),
               ],
             ),
@@ -73,7 +76,7 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
           NavigationDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long), label: 'Activity'),
           NavigationDestination(icon: Icon(Icons.pie_chart_outline), selectedIcon: Icon(Icons.pie_chart), label: 'Budgets'),
           NavigationDestination(icon: Icon(Icons.trending_up_outlined), selectedIcon: Icon(Icons.trending_up), label: 'Portfolio'),
-          NavigationDestination(icon: Icon(Icons.analytics_outlined), selectedIcon: Icon(Icons.analytics), label: 'Analytics'),
+          NavigationDestination(icon: Icon(Icons.psychology_outlined), selectedIcon: Icon(Icons.psychology), label: 'Planning'),
         ],
       ),
     );
@@ -146,7 +149,7 @@ class _DashboardView extends ConsumerWidget {
               error: (_, __) => const SizedBox.shrink(),
             ),
 
-            // Aggregate Net Worth Hero Card (Accounts + Portfolio Assets)
+            // Aggregate Net Worth Hero Card
             Card(
               elevation: 2,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
