@@ -23,6 +23,9 @@ import '../../features/sms/data/repositories/sms_repository_impl.dart';
 import '../../features/sms/domain/repositories/sms_repository.dart';
 import '../../features/import/data/repositories/import_repository_impl.dart';
 import '../../features/import/domain/repositories/import_repository.dart';
+import '../../features/portfolio/data/datasources/asset_dao.dart';
+import '../../features/portfolio/data/repositories/portfolio_repository_impl.dart';
+import '../../features/portfolio/domain/repositories/portfolio_repository.dart';
 
 // Database Singleton
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -56,6 +59,10 @@ final smsDaoProvider = Provider<SmsDao>((ref) {
   return SmsDao(ref.watch(databaseProvider));
 });
 
+final assetDaoProvider = Provider<AssetDao>((ref) {
+  return AssetDao(ref.watch(databaseProvider));
+});
+
 // Repositories
 final accountRepositoryProvider = Provider<IAccountRepository>((ref) {
   return AccountRepositoryImpl(ref.watch(accountDaoProvider));
@@ -87,6 +94,13 @@ final smsRepositoryProvider = Provider<ISmsRepository>((ref) {
 
 final importRepositoryProvider = Provider<IImportRepository>((ref) {
   return ImportRepositoryImpl(ref.watch(databaseProvider));
+});
+
+final portfolioRepositoryProvider = Provider<IPortfolioRepository>((ref) {
+  return PortfolioRepositoryImpl(
+    ref.watch(assetDaoProvider),
+    ref.watch(accountDaoProvider),
+  );
 });
 
 // Use Cases
