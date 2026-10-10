@@ -14,6 +14,7 @@ import '../../../sms/presentation/providers/sms_providers.dart';
 import '../../../portfolio/presentation/screens/portfolio_screen.dart';
 import '../../../portfolio/presentation/providers/portfolio_providers.dart';
 import '../../../planning/presentation/screens/wealth_planning_screen.dart';
+import '../../../ai_mcp/presentation/screens/ai_assistant_screen.dart';
 
 class HomeDashboardScreen extends ConsumerStatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -38,7 +39,7 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
       const BudgetScreen(),
       const PortfolioScreen(),
       const WealthPlanningScreen(),
-      const AnalyticsScreen(),
+      const AiAssistantScreen(),
     ];
 
     if (isDesktop || isTablet) {
@@ -55,7 +56,7 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
                 NavigationRailDestination(icon: Icon(Icons.pie_chart_outline), selectedIcon: Icon(Icons.pie_chart), label: Text('Budgets')),
                 NavigationRailDestination(icon: Icon(Icons.trending_up_outlined), selectedIcon: Icon(Icons.trending_up), label: Text('Portfolio')),
                 NavigationRailDestination(icon: Icon(Icons.psychology_outlined), selectedIcon: Icon(Icons.psychology), label: Text('Planning')),
-                NavigationRailDestination(icon: Icon(Icons.analytics_outlined), selectedIcon: Icon(Icons.analytics), label: Text('Analytics')),
+                NavigationRailDestination(icon: Icon(Icons.smart_toy_outlined), selectedIcon: Icon(Icons.smart_toy), label: Text('Mony AI (MCP)')),
               ],
             ),
             const VerticalDivider(thickness: 1, width: 1),
@@ -76,7 +77,7 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
           NavigationDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long), label: 'Activity'),
           NavigationDestination(icon: Icon(Icons.pie_chart_outline), selectedIcon: Icon(Icons.pie_chart), label: 'Budgets'),
           NavigationDestination(icon: Icon(Icons.trending_up_outlined), selectedIcon: Icon(Icons.trending_up), label: 'Portfolio'),
-          NavigationDestination(icon: Icon(Icons.psychology_outlined), selectedIcon: Icon(Icons.psychology), label: 'Planning'),
+          NavigationDestination(icon: Icon(Icons.smart_toy_outlined), selectedIcon: Icon(Icons.smart_toy), label: 'AI (MCP)'),
         ],
       ),
     );
