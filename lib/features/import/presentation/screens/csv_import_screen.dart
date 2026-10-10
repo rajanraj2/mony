@@ -35,7 +35,7 @@ class _CsvImportScreenState extends ConsumerState<CsvImportScreen> {
     );
   }
 
-  Widget _buildInputStep(List accounts) {
+  Widget _buildInputStep(List<dynamic> accounts) {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -52,7 +52,7 @@ class _CsvImportScreenState extends ConsumerState<CsvImportScreen> {
         DropdownButtonFormField<String>(
           value: _selectedAccountId,
           decoration: const InputDecoration(labelText: 'Target Account', border: OutlineInputBorder()),
-          items: accounts.map((a) => DropdownMenuItem(value: a.id, child: Text(a.name))).toList(),
+          items: accounts.map<DropdownMenuItem<String>>((a) => DropdownMenuItem<String>(value: a.id as String, child: Text(a.name as String))).toList(),
           onChanged: (v) => setState(() => _selectedAccountId = v),
         ),
         const SizedBox(height: 16),

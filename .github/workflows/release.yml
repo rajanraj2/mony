@@ -1,0 +1,147 @@
+name: Mony Multi-Platform Release & Deployment
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "release"
+  cancel-in-progress: false
+
+jobs:
+  deploy_web:
+    name: Build & Deploy Web Application
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Flutter Web (PWA)
+        run: flutter build web --release --base-href "/mony/"
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Web Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'build/web'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  build_android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Release APK
+        run: flutter build apk --release
+
+      - name: Upload Android Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mony-android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+  build_macos:
+    name: Build macOS Application (.dmg / .zip)
+    runs-on: macos-14
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build macOS App
+        run: flutter build macos --release
+
+      - name: Package macOS DMG / ZIP
+        run: |
+          cd build/macos/Build/Products/Release
+          zip -r Mony-macOS.zip Mony.app
+          hdiutil create -volname "Mony" -srcfolder Mony.app -ov -format UDZO Mony.dmg
+
+      - name: Upload macOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mony-macos-dmg
+          path: |
+            build/macos/Build/Products/Release/Mony.dmg
+            build/macos/Build/Products/Release/Mony-macOS.zip
+
+  create_release:
+    name: Publish GitHub Release
+    needs: [build_android, build_macos, deploy_web]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Android Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mony-android-apk
+          path: release-artifacts
+
+      - name: Download macOS Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mony-macos-dmg
+          path: release-artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release-artifacts/app-release.apk
+            release-artifacts/Mony.dmg
+            release-artifacts/Mony-macOS.zip
+          draft: false
+          prerelease: false
+          generate_release_notes: true

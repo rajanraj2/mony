@@ -104,7 +104,7 @@ class SmsRepositoryImpl implements ISmsRepository {
       id: 'rule-hdfc-debit',
       name: 'HDFC Debit',
       senderPattern: r'HDFCBK|HDFC',
-      messagePattern: r'(?:Rs\.?|INR)\s*(?<amount>[\d,]+(?:\.\d{2})?)\s*(?:debited|spent).*?(?:at|to|info)\s*(?<merchant>[a-zA-Z0-9\s&*-]+?)(?:\.|\s+on|\s+avail)',
+      messagePattern: r'(?:Rs\.?|INR)\s*(?<amount>[\d,]+(?:\.\d{2})?)\s*(?:debited|spent).*?(?:at|to|for|info)\s*(?<merchant>[a-zA-Z0-9\s&*-]+?)(?:\.|\s+on|\s+avail)',
       direction: 'expense',
       accountHint: 'HDFC Bank',
       sortOrder: 1,

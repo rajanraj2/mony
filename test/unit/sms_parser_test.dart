@@ -4,7 +4,7 @@ void main() {
   group('Bank SMS Regex Parser Pattern Tests', () {
     test('HDFC Debit regex extracts amount and merchant name', () {
       final pattern = RegExp(
-        r'(?:Rs\.?|INR)\s*(?<amount>[\d,]+(?:\.\d{2})?)\s*(?:debited|spent).*?(?:at|to|info)\s*(?<merchant>[a-zA-Z0-9\s&*-]+?)(?:\.|\s+on|\s+avail)',
+        r'(?:Rs\.?|INR)\s*(?<amount>[\d,]+(?:\.\d{2})?)\s*(?:debited|spent).*?(?:at|to|for|info)\s*(?<merchant>[a-zA-Z0-9\s&*-]+?)(?:\.|\s+on|\s+avail)',
         caseSensitive: false,
       );
 
