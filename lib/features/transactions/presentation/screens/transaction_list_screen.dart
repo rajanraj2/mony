@@ -5,6 +5,7 @@ import '../../../../core/di/providers.dart';
 import '../../domain/models/transaction.dart';
 import '../providers/transaction_providers.dart';
 import 'transaction_form_screen.dart';
+import '../../../import/presentation/screens/csv_import_screen.dart';
 
 class TransactionListScreen extends ConsumerWidget {
   const TransactionListScreen({super.key});
@@ -17,6 +18,15 @@ class TransactionListScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Transactions'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.file_upload_outlined),
+            tooltip: 'Import & Reconcile Bank CSV',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const CsvImportScreen()),
+            ),
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Padding(
@@ -48,7 +58,7 @@ class TransactionListScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   Text('No transactions found', style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 8),
-                  Text('Tap + to record your first transaction', style: Theme.of(context).textTheme.bodyMedium),
+                  Text('Tap + to record or import a bank statement', style: Theme.of(context).textTheme.bodyMedium),
                 ],
               ),
             );

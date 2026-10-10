@@ -21,6 +21,8 @@ import '../../features/analytics/domain/repositories/analytics_repository.dart';
 import '../../features/sms/data/datasources/sms_dao.dart';
 import '../../features/sms/data/repositories/sms_repository_impl.dart';
 import '../../features/sms/domain/repositories/sms_repository.dart';
+import '../../features/import/data/repositories/import_repository_impl.dart';
+import '../../features/import/domain/repositories/import_repository.dart';
 
 // Database Singleton
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -81,6 +83,10 @@ final analyticsRepositoryProvider = Provider<IAnalyticsRepository>((ref) {
 
 final smsRepositoryProvider = Provider<ISmsRepository>((ref) {
   return SmsRepositoryImpl(ref.watch(smsDaoProvider));
+});
+
+final importRepositoryProvider = Provider<IImportRepository>((ref) {
+  return ImportRepositoryImpl(ref.watch(databaseProvider));
 });
 
 // Use Cases
