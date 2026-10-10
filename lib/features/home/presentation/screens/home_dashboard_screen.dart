@@ -9,6 +9,8 @@ import '../../../budgets/presentation/screens/budget_screen.dart';
 import '../../../goals/presentation/screens/goals_screen.dart';
 import '../../../budgets/presentation/providers/budget_providers.dart';
 import '../../../analytics/presentation/screens/analytics_screen.dart';
+import '../../../sms/presentation/screens/sms_approval_queue_screen.dart';
+import '../../../sms/presentation/providers/sms_providers.dart';
 
 class HomeDashboardScreen extends ConsumerStatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -32,7 +34,7 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
       const TransactionListScreen(),
       const BudgetScreen(),
       const AnalyticsScreen(),
-      const _PlaceholderFeatureView(title: 'Settings & AI', sectionNum: 8),
+      const SmsApprovalQueueScreen(),
     ];
 
     if (isDesktop || isTablet) {
@@ -48,7 +50,7 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
                 NavigationRailDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long), label: Text('Transactions')),
                 NavigationRailDestination(icon: Icon(Icons.pie_chart_outline), selectedIcon: Icon(Icons.pie_chart), label: Text('Budgets')),
                 NavigationRailDestination(icon: Icon(Icons.analytics_outlined), selectedIcon: Icon(Icons.analytics), label: Text('Analytics')),
-                NavigationRailDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings), label: Text('Settings')),
+                NavigationRailDestination(icon: Icon(Icons.sms_outlined), selectedIcon: Icon(Icons.sms), label: Text('SMS Queue')),
               ],
             ),
             const VerticalDivider(thickness: 1, width: 1),
@@ -69,7 +71,7 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
           NavigationDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long), label: 'Activity'),
           NavigationDestination(icon: Icon(Icons.pie_chart_outline), selectedIcon: Icon(Icons.pie_chart), label: 'Budgets'),
           NavigationDestination(icon: Icon(Icons.analytics_outlined), selectedIcon: Icon(Icons.analytics), label: 'Analytics'),
-          NavigationDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings), label: 'Settings'),
+          NavigationDestination(icon: Icon(Icons.sms_outlined), selectedIcon: Icon(Icons.sms), label: 'SMS Queue'),
         ],
       ),
     );
@@ -89,6 +91,7 @@ class _DashboardView extends ConsumerWidget {
     final accountsAsync = ref.watch(accountListProvider);
     final recentTxnsAsync = ref.watch(transactionListProvider);
     final budgetsAsync = ref.watch(budgetProgressListProvider);
+    final pendingSmsAsync = ref.watch(pendingSmsListProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -106,10 +109,33 @@ class _DashboardView extends ConsumerWidget {
           ref.invalidate(transactionListProvider);
           ref.invalidate(accountListProvider);
           ref.invalidate(budgetProgressListProvider);
+          ref.invalidate(pendingSmsListProvider);
         },
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            // SMS Review Banner if pending entries exist
+            pendingSmsAsync.when(
+              data: (items) {
+                if (items.isEmpty) return const SizedBox.shrink();
+                return Card(
+                  color: Colors.amber.shade50,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: ListTile(
+                    leading: const CircleAvatar(backgroundColor: Colors.amber, child: Icon(Icons.sms, color: Colors.white)),
+                    title: Text('${items.length} Pending Bank Transactions', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: const Text('Tap to review and approve auto-captured SMS expenses'),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SmsApprovalQueueScreen()),
+                    ),
+                  ),
+                );
+              },
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
+            ),
+
             // Net Worth Hero Card
             Card(
               elevation: 2,
@@ -314,32 +340,6 @@ class _StatChip extends StatelessWidget {
         const SizedBox(height: 2),
         Text(amount, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14)),
       ],
-    );
-  }
-}
-
-class _PlaceholderFeatureView extends StatelessWidget {
-  final String title;
-  final int sectionNum;
-
-  const _PlaceholderFeatureView({required this.title, required this.sectionNum});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.lock_clock, size: 64, color: Theme.of(context).colorScheme.outline),
-            const SizedBox(height: 16),
-            Text(title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text('Scheduled for Section $sectionNum in roadmap', style: Theme.of(context).textTheme.bodyMedium),
-          ],
-        ),
-      ),
     );
   }
 }

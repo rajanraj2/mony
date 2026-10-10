@@ -18,6 +18,9 @@ import '../../features/goals/data/repositories/goal_repository_impl.dart';
 import '../../features/goals/domain/repositories/goal_repository.dart';
 import '../../features/analytics/data/repositories/analytics_repository_impl.dart';
 import '../../features/analytics/domain/repositories/analytics_repository.dart';
+import '../../features/sms/data/datasources/sms_dao.dart';
+import '../../features/sms/data/repositories/sms_repository_impl.dart';
+import '../../features/sms/domain/repositories/sms_repository.dart';
 
 // Database Singleton
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -47,6 +50,10 @@ final goalDaoProvider = Provider<GoalDao>((ref) {
   return GoalDao(ref.watch(databaseProvider));
 });
 
+final smsDaoProvider = Provider<SmsDao>((ref) {
+  return SmsDao(ref.watch(databaseProvider));
+});
+
 // Repositories
 final accountRepositoryProvider = Provider<IAccountRepository>((ref) {
   return AccountRepositoryImpl(ref.watch(accountDaoProvider));
@@ -70,6 +77,10 @@ final goalRepositoryProvider = Provider<IGoalRepository>((ref) {
 
 final analyticsRepositoryProvider = Provider<IAnalyticsRepository>((ref) {
   return AnalyticsRepositoryImpl(ref.watch(databaseProvider));
+});
+
+final smsRepositoryProvider = Provider<ISmsRepository>((ref) {
+  return SmsRepositoryImpl(ref.watch(smsDaoProvider));
 });
 
 // Use Cases
