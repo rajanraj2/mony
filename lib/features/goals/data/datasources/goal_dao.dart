@@ -88,7 +88,7 @@ class GoalDao extends DatabaseAccessor<AppDatabase> with _$GoalDaoMixin {
     }
     // Alternatively sum transactions explicitly labeled or referencing this goal
     final goalTxns = await (select(transactionsTable)..where((t) => t.labels.like('%goal:$goalId%'))).get();
-    return goalTxns.fold(0.0, (sum, t) => sum + t.amount);
+    return goalTxns.fold<double>(0.0, (sum, t) => sum + t.amount);
   }
 
   domain.Goal _mapToDomain(GoalsTableData r, double currentAmount) {
