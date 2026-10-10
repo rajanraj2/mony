@@ -28,6 +28,8 @@ import '../../features/portfolio/data/repositories/portfolio_repository_impl.dar
 import '../../features/portfolio/domain/repositories/portfolio_repository.dart';
 import '../../features/planning/data/repositories/planning_repository_impl.dart';
 import '../../features/planning/domain/repositories/planning_repository.dart';
+import '../../features/ai_mcp/data/repositories/mcp_server_repository_impl.dart';
+import '../../features/ai_mcp/domain/repositories/mcp_server_repository.dart';
 
 // Database Singleton
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -107,6 +109,19 @@ final portfolioRepositoryProvider = Provider<IPortfolioRepository>((ref) {
 
 final planningRepositoryProvider = Provider<IPlanningRepository>((ref) {
   return PlanningRepositoryImpl();
+});
+
+final mcpServerRepositoryProvider = Provider<IMcpServerRepository>((ref) {
+  return McpServerRepositoryImpl(
+    ref.watch(addTransactionUseCaseProvider),
+    ref.watch(transactionRepositoryProvider),
+    ref.watch(accountRepositoryProvider),
+    ref.watch(categoryRepositoryProvider),
+    ref.watch(budgetRepositoryProvider),
+    ref.watch(goalRepositoryProvider),
+    ref.watch(analyticsRepositoryProvider),
+    ref.watch(portfolioRepositoryProvider),
+  );
 });
 
 // Use Cases
