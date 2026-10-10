@@ -5,6 +5,9 @@ import '../../../transactions/domain/models/transaction.dart';
 import '../../../transactions/presentation/providers/transaction_providers.dart';
 import '../../../transactions/presentation/screens/transaction_form_screen.dart';
 import '../../../transactions/presentation/screens/transaction_list_screen.dart';
+import '../../../budgets/presentation/screens/budget_screen.dart';
+import '../../../goals/presentation/screens/goals_screen.dart';
+import '../../../budgets/presentation/providers/budget_providers.dart';
 
 class HomeDashboardScreen extends ConsumerStatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -26,46 +29,24 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
     final screens = [
       _DashboardView(isPrivacyMode: _isPrivacyMode, onTogglePrivacy: () => setState(() => _isPrivacyMode = !_isPrivacyMode)),
       const TransactionListScreen(),
-      const _PlaceholderFeatureView(title: 'Budgets & Goals', sectionNum: 2),
-      const _PlaceholderFeatureView(title: 'Analytics & Reports', sectionNum: 3),
+      const BudgetScreen(),
+      const GoalsScreen(),
       const _PlaceholderFeatureView(title: 'Settings & AI', sectionNum: 8),
     ];
 
-    if (isDesktop) {
+    if (isDesktop || isTablet) {
       return Scaffold(
         body: Row(
           children: [
             NavigationRail(
-              extended: true,
+              extended: isDesktop,
               selectedIndex: _currentIndex,
               onDestinationSelected: (i) => setState(() => _currentIndex = i),
               destinations: const [
                 NavigationRailDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: Text('Dashboard')),
                 NavigationRailDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long), label: Text('Transactions')),
                 NavigationRailDestination(icon: Icon(Icons.pie_chart_outline), selectedIcon: Icon(Icons.pie_chart), label: Text('Budgets')),
-                NavigationRailDestination(icon: Icon(Icons.analytics_outlined), selectedIcon: Icon(Icons.analytics), label: Text('Analytics')),
-                NavigationRailDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings), label: Text('Settings')),
-              ],
-            ),
-            const VerticalDivider(thickness: 1, width: 1),
-            Expanded(child: screens[_currentIndex]),
-          ],
-        ),
-      );
-    }
-
-    if (isTablet) {
-      return Scaffold(
-        body: Row(
-          children: [
-            NavigationRail(
-              selectedIndex: _currentIndex,
-              onDestinationSelected: (i) => setState(() => _currentIndex = i),
-              destinations: const [
-                NavigationRailDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: Text('Dashboard')),
-                NavigationRailDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long), label: Text('Transactions')),
-                NavigationRailDestination(icon: Icon(Icons.pie_chart_outline), selectedIcon: Icon(Icons.pie_chart), label: Text('Budgets')),
-                NavigationRailDestination(icon: Icon(Icons.analytics_outlined), selectedIcon: Icon(Icons.analytics), label: Text('Analytics')),
+                NavigationRailDestination(icon: Icon(Icons.flag_outlined), selectedIcon: Icon(Icons.flag), label: Text('Goals')),
                 NavigationRailDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings), label: Text('Settings')),
               ],
             ),
@@ -86,7 +67,7 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
           NavigationDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: 'Home'),
           NavigationDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long), label: 'Activity'),
           NavigationDestination(icon: Icon(Icons.pie_chart_outline), selectedIcon: Icon(Icons.pie_chart), label: 'Budgets'),
-          NavigationDestination(icon: Icon(Icons.analytics_outlined), selectedIcon: Icon(Icons.analytics), label: 'Analytics'),
+          NavigationDestination(icon: Icon(Icons.flag_outlined), selectedIcon: Icon(Icons.flag), label: 'Goals'),
           NavigationDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings), label: 'Settings'),
         ],
       ),
@@ -106,6 +87,7 @@ class _DashboardView extends ConsumerWidget {
     final summaryAsync = ref.watch(transactionSummaryProvider);
     final accountsAsync = ref.watch(accountListProvider);
     final recentTxnsAsync = ref.watch(transactionListProvider);
+    final budgetsAsync = ref.watch(budgetProgressListProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -122,6 +104,7 @@ class _DashboardView extends ConsumerWidget {
         onRefresh: () async {
           ref.invalidate(transactionListProvider);
           ref.invalidate(accountListProvider);
+          ref.invalidate(budgetProgressListProvider);
         },
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -171,7 +154,53 @@ class _DashboardView extends ConsumerWidget {
             ),
             const SizedBox(height: 20),
 
-            // Accounts Overview Carousel / List
+            // Budget Widget on Home Screen
+            budgetsAsync.when(
+              data: (progresses) {
+                if (progresses.isEmpty) return const SizedBox.shrink();
+                final totalBudgeted = progresses.fold(0.0, (sum, p) => sum + p.effectiveBudget);
+                final totalSpent = progresses.fold(0.0, (sum, p) => sum + p.spent);
+                final overallPct = totalBudgeted > 0 ? (totalSpent / totalBudgeted).clamp(0.0, 1.0) : 0.0;
+
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Monthly Budget Progress', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text('${(overallPct * 100).toStringAsFixed(0)}%',
+                                style: TextStyle(color: overallPct > 0.9 ? Colors.red : Colors.green, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: overallPct,
+                            minHeight: 8,
+                            valueColor: AlwaysStoppedAnimation(overallPct > 0.9 ? Colors.red : Theme.of(context).colorScheme.primary),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '₹${totalSpent.toStringAsFixed(0)} of ₹${totalBudgeted.toStringAsFixed(0)}',
+                          style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
+            ),
+            const SizedBox(height: 12),
+
+            // Accounts Overview Carousel
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -219,12 +248,6 @@ class _DashboardView extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Recent Transactions', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                TextButton(
-                  onPressed: () {
-                    // Navigate to Transactions tab
-                  },
-                  child: const Text('View All'),
-                ),
               ],
             ),
             recentTxnsAsync.when(

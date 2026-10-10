@@ -10,6 +10,12 @@ import '../../features/transactions/data/datasources/transaction_dao.dart';
 import '../../features/transactions/data/repositories/transaction_repository_impl.dart';
 import '../../features/transactions/domain/repositories/transaction_repository.dart';
 import '../../features/transactions/domain/usecases/transaction_usecases.dart';
+import '../../features/budgets/data/datasources/budget_dao.dart';
+import '../../features/budgets/data/repositories/budget_repository_impl.dart';
+import '../../features/budgets/domain/repositories/budget_repository.dart';
+import '../../features/goals/data/datasources/goal_dao.dart';
+import '../../features/goals/data/repositories/goal_repository_impl.dart';
+import '../../features/goals/domain/repositories/goal_repository.dart';
 
 // Database Singleton
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -31,6 +37,14 @@ final transactionDaoProvider = Provider<TransactionDao>((ref) {
   return TransactionDao(ref.watch(databaseProvider));
 });
 
+final budgetDaoProvider = Provider<BudgetDao>((ref) {
+  return BudgetDao(ref.watch(databaseProvider));
+});
+
+final goalDaoProvider = Provider<GoalDao>((ref) {
+  return GoalDao(ref.watch(databaseProvider));
+});
+
 // Repositories
 final accountRepositoryProvider = Provider<IAccountRepository>((ref) {
   return AccountRepositoryImpl(ref.watch(accountDaoProvider));
@@ -42,6 +56,14 @@ final categoryRepositoryProvider = Provider<ICategoryRepository>((ref) {
 
 final transactionRepositoryProvider = Provider<ITransactionRepository>((ref) {
   return TransactionRepositoryImpl(ref.watch(transactionDaoProvider));
+});
+
+final budgetRepositoryProvider = Provider<IBudgetRepository>((ref) {
+  return BudgetRepositoryImpl(ref.watch(budgetDaoProvider));
+});
+
+final goalRepositoryProvider = Provider<IGoalRepository>((ref) {
+  return GoalRepositoryImpl(ref.watch(goalDaoProvider));
 });
 
 // Use Cases
