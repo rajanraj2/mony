@@ -11,6 +11,8 @@ import '../../../budgets/presentation/providers/budget_providers.dart';
 import '../../../analytics/presentation/screens/analytics_screen.dart';
 import '../../../sms/presentation/screens/sms_approval_queue_screen.dart';
 import '../../../sms/presentation/providers/sms_providers.dart';
+import '../../../portfolio/presentation/screens/portfolio_screen.dart';
+import '../../../portfolio/presentation/providers/portfolio_providers.dart';
 
 class HomeDashboardScreen extends ConsumerStatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -33,8 +35,8 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
       _DashboardView(isPrivacyMode: _isPrivacyMode, onTogglePrivacy: () => setState(() => _isPrivacyMode = !_isPrivacyMode)),
       const TransactionListScreen(),
       const BudgetScreen(),
+      const PortfolioScreen(),
       const AnalyticsScreen(),
-      const SmsApprovalQueueScreen(),
     ];
 
     if (isDesktop || isTablet) {
@@ -49,8 +51,8 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
                 NavigationRailDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: Text('Dashboard')),
                 NavigationRailDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long), label: Text('Transactions')),
                 NavigationRailDestination(icon: Icon(Icons.pie_chart_outline), selectedIcon: Icon(Icons.pie_chart), label: Text('Budgets')),
+                NavigationRailDestination(icon: Icon(Icons.trending_up_outlined), selectedIcon: Icon(Icons.trending_up), label: Text('Portfolio')),
                 NavigationRailDestination(icon: Icon(Icons.analytics_outlined), selectedIcon: Icon(Icons.analytics), label: Text('Analytics')),
-                NavigationRailDestination(icon: Icon(Icons.sms_outlined), selectedIcon: Icon(Icons.sms), label: Text('SMS Queue')),
               ],
             ),
             const VerticalDivider(thickness: 1, width: 1),
@@ -70,8 +72,8 @@ class _HomeDashboardScreenState extends ConsumerState<HomeDashboardScreen> {
           NavigationDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: 'Home'),
           NavigationDestination(icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long), label: 'Activity'),
           NavigationDestination(icon: Icon(Icons.pie_chart_outline), selectedIcon: Icon(Icons.pie_chart), label: 'Budgets'),
+          NavigationDestination(icon: Icon(Icons.trending_up_outlined), selectedIcon: Icon(Icons.trending_up), label: 'Portfolio'),
           NavigationDestination(icon: Icon(Icons.analytics_outlined), selectedIcon: Icon(Icons.analytics), label: 'Analytics'),
-          NavigationDestination(icon: Icon(Icons.sms_outlined), selectedIcon: Icon(Icons.sms), label: 'SMS Queue'),
         ],
       ),
     );
@@ -86,7 +88,7 @@ class _DashboardView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final netWorth = ref.watch(netWorthProvider);
+    final netWorthAsync = ref.watch(aggregateNetWorthProvider);
     final summaryAsync = ref.watch(transactionSummaryProvider);
     final accountsAsync = ref.watch(accountListProvider);
     final recentTxnsAsync = ref.watch(transactionListProvider);
@@ -97,6 +99,13 @@ class _DashboardView extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('💰 Mony', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.sms_outlined),
+            tooltip: 'SMS Capture Queue',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const SmsApprovalQueueScreen()),
+            ),
+          ),
           IconButton(
             icon: Icon(isPrivacyMode ? Icons.visibility_off : Icons.visibility),
             tooltip: 'Toggle Privacy Mode',
@@ -110,6 +119,7 @@ class _DashboardView extends ConsumerWidget {
           ref.invalidate(accountListProvider);
           ref.invalidate(budgetProgressListProvider);
           ref.invalidate(pendingSmsListProvider);
+          ref.invalidate(aggregateNetWorthProvider);
         },
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -136,7 +146,7 @@ class _DashboardView extends ConsumerWidget {
               error: (_, __) => const SizedBox.shrink(),
             ),
 
-            // Net Worth Hero Card
+            // Aggregate Net Worth Hero Card (Accounts + Portfolio Assets)
             Card(
               elevation: 2,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -156,11 +166,15 @@ class _DashboardView extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Total Net Worth', style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.white70)),
+                    Text('Total Net Worth (Cash + Assets)', style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Colors.white70)),
                     const SizedBox(height: 8),
-                    Text(
-                      isPrivacyMode ? '••••••' : '₹${netWorth.toStringAsFixed(2)}',
-                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                    netWorthAsync.when(
+                      data: (nw) => Text(
+                        isPrivacyMode ? '••••••' : '₹${nw.toStringAsFixed(2)}',
+                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      loading: () => const Text('Loading...', style: TextStyle(color: Colors.white)),
+                      error: (_, __) => const Text('₹0.00', style: TextStyle(color: Colors.white)),
                     ),
                     const SizedBox(height: 16),
                     summaryAsync.when(
