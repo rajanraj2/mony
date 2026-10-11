@@ -300,6 +300,10 @@
     <header class="topbar">
       <div class="page-title" id="page-heading">Financial Overview</div>
       <div class="topbar-actions">
+        <button class="btn btn-secondary" onclick="openThemeModal()">
+          <span class="material-icons-round">palette</span>
+          <span>Theme & Styling</span>
+        </button>
         <button class="btn btn-secondary" onclick="openAuthModal()" id="btn-auth-profile">
           <span class="material-icons-round">account_circle</span>
           <span id="auth-status-text">Sign In / Cloud Sync</span>
@@ -915,7 +919,76 @@
     </div>
   </div>
 
+
+  <!-- Theme Customizer Modal -->
+  <div id="theme-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#151b23; border:1px solid #30363d; border-radius:16px; padding:32px; width:440px; color:#f0f6fc;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="font-size:18px; font-weight:800;">Customize Appearance & Colors</h3>
+        <button onclick="closeThemeModal()" style="background:none; border:none; color:#8b949e; cursor:pointer;"><span class="material-icons-round">close</span></button>
+      </div>
+
+      <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">Theme Background</label>
+      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:8px 0 16px;">
+        <button class="btn btn-secondary" style="justify-content:center; font-size:12px;" onclick="applyThemeMode('dark')">Obsidian Dark</button>
+        <button class="btn btn-secondary" style="justify-content:center; font-size:12px;" onclick="applyThemeMode('amoled')">AMOLED Black</button>
+        <button class="btn btn-secondary" style="justify-content:center; font-size:12px;" onclick="applyThemeMode('light')">Clean Light</button>
+      </div>
+
+      <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">Primary Accent Color Palette</label>
+      <div style="display:flex; gap:10px; margin:10px 0 20px;">
+        <div onclick="applyAccent('#15803d', '#22c55e')" style="width:36px; height:36px; border-radius:50%; background:#22c55e; cursor:pointer; border:2px solid white;"></div>
+        <div onclick="applyAccent('#1d4ed8', '#3b82f6')" style="width:36px; height:36px; border-radius:50%; background:#3b82f6; cursor:pointer;"></div>
+        <div onclick="applyAccent('#6b21a8', '#a855f7')" style="width:36px; height:36px; border-radius:50%; background:#a855f7; cursor:pointer;"></div>
+        <div onclick="applyAccent('#b91c1c', '#ef4444')" style="width:36px; height:36px; border-radius:50%; background:#ef4444; cursor:pointer;"></div>
+        <div onclick="applyAccent('#b45309', '#f59e0b')" style="width:36px; height:36px; border-radius:50%; background:#f59e0b; cursor:pointer;"></div>
+        <div onclick="applyAccent('#0f766e', '#14b8a6')" style="width:36px; height:36px; border-radius:50%; background:#14b8a6; cursor:pointer;"></div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <button class="btn btn-secondary" onclick="applyAccent('#15803d', '#22c55e'); applyThemeMode('dark');">Reset Defaults</button>
+        <button class="btn btn-primary" onclick="closeThemeModal()">Done</button>
+      </div>
+    </div>
+  </div>
+
   <script>
+    function openThemeModal() { document.getElementById('theme-modal').style.display = 'flex'; }
+    function closeThemeModal() { document.getElementById('theme-modal').style.display = 'none'; }
+
+    function applyAccent(primary, light) {
+      document.documentElement.style.setProperty('--primary', primary);
+      document.documentElement.style.setProperty('--primary-light', light);
+    }
+
+    function applyThemeMode(mode) {
+      if (mode === 'light') {
+        document.documentElement.style.setProperty('--bg', '#f8f9fa');
+        document.documentElement.style.setProperty('--card-bg', '#ffffff');
+        document.documentElement.style.setProperty('--card-border', '#e0e4e1');
+        document.documentElement.style.setProperty('--text', '#191c1d');
+        document.documentElement.style.setProperty('--text-muted', '#666666');
+        document.querySelector('.sidebar').style.background = '#ffffff';
+        document.querySelector('.topbar').style.background = 'rgba(255,255,255,0.8)';
+      } else if (mode === 'amoled') {
+        document.documentElement.style.setProperty('--bg', '#000000');
+        document.documentElement.style.setProperty('--card-bg', '#0a0a0a');
+        document.documentElement.style.setProperty('--card-border', '#1a1a1a');
+        document.documentElement.style.setProperty('--text', '#f0f6fc');
+        document.documentElement.style.setProperty('--text-muted', '#8b949e');
+        document.querySelector('.sidebar').style.background = '#000000';
+        document.querySelector('.topbar').style.background = 'rgba(0,0,0,0.8)';
+      } else {
+        document.documentElement.style.setProperty('--bg', '#0b0f14');
+        document.documentElement.style.setProperty('--card-bg', '#151b23');
+        document.documentElement.style.setProperty('--card-border', '#232b36');
+        document.documentElement.style.setProperty('--text', '#f0f6fc');
+        document.documentElement.style.setProperty('--text-muted', '#8b949e');
+        document.querySelector('.sidebar').style.background = '#0d1117';
+        document.querySelector('.topbar').style.background = 'rgba(13, 17, 23, 0.7)';
+      }
+    }
+
     function openApiKeyModal() {
       document.getElementById('apikey-modal').style.display = 'flex';
     }
