@@ -55,10 +55,8 @@ dependencies:
   flutter_secure_storage: ^9.2.2
 
   # ── Notifications ─────────────────────────────────────────────────────────
-  flutter_local_notifications: ^17.2.2
 
   # ── Background Tasks ──────────────────────────────────────────────────────
-  workmanager: ^0.5.2
 
   # ── SMS (Android) ─────────────────────────────────────────────────────────
 

@@ -106,7 +106,7 @@ jobs:
   deploy_web:
     name: Build & Deploy Web Application
     needs: [compute_tag]
-    if: needs.compute_tag.outputs.should_release == 'true'
+    if: needs.compute_tag.outputs.should_release == 'true' && (github.ref == 'refs/heads/main' || github.event.pull_request.base.ref == 'main' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -197,8 +197,6 @@ jobs:
         run: |
           mkdir -p release-artifacts
           hdiutil create -volname "Mony" -srcfolder build/macos/Build/Products/Release/mony.app -ov -format UDZO release-artifacts/Mony-macOS.dmg
-          cd build/macos/Build/Products/Release
-          zip -r ../../../../release-artifacts/Mony-macOS.zip mony.app
 
       - name: Upload macOS DMG Artifact
         uses: actions/upload-artifact@v4
@@ -209,20 +207,22 @@ jobs:
   create_release:
     name: Publish GitHub Release
     needs: [compute_tag, deploy_web, build_android, build_macos_dmg]
+    if: always() && needs.compute_tag.outputs.should_release == 'true' && (needs.build_android.result == 'success' || needs.build_macos_dmg.result == 'success')
     runs-on: ubuntu-latest
-    if: needs.compute_tag.outputs.should_release == 'true'
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Download Android Artifact
         uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           name: mony-android-apk
           path: release-assets
 
       - name: Download macOS Artifact
         uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           name: mony-macos-dmg
           path: release-assets
