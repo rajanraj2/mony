@@ -269,6 +269,9 @@
       <button class="nav-btn" onclick="showTab('analytics')">
         <span class="material-icons-round">analytics</span> Analytics & Reports
       </button>
+      <button class="nav-btn" onclick="showTab('family')">
+        <span class="material-icons-round">diversity_3</span> Family & Couple Sync
+      </button>
       <button class="nav-btn" onclick="showTab('sms')">
         <span class="material-icons-round">sms</span> SMS Auto-Capture
       </button>
@@ -689,6 +692,101 @@
         </div>
       </section>
 
+
+      <!-- 9. FAMILY & COUPLE SYNC VIEW -->
+      <section id="tab-family" class="tab-page">
+        <div class="metrics-grid">
+          <div class="card">
+            <div class="card-label">Household Joint Wealth</div>
+            <div class="card-value" style="color:#22c55e;">₹24,80,000.00</div>
+            <div class="card-sub">Combined 2 Linked Profiles</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Joint Monthly Outflow</div>
+            <div class="card-value" style="color:#f87171;">₹84,350.00</div>
+            <div class="card-sub">Family Discretionary Spend</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Household Link Code</div>
+            <div class="card-value" style="color:#38bdf8; font-size:20px; font-family:'JetBrains Mono', monospace;">MONY-8491</div>
+            <div class="card-sub">Share with Spouse / Family</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Sync Status</div>
+            <div class="card-value" style="color:#c084fc; font-size:18px;">Active • 2 Devices</div>
+            <div class="card-sub">Real-Time Cloud Ledger</div>
+          </div>
+        </div>
+
+        <div class="split-grid">
+          <!-- Member Profiles -->
+          <div class="card">
+            <h3 style="font-size:15px; font-weight:700; margin-bottom:16px;">Linked Household Members</h3>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Member</th>
+                  <th>Role</th>
+                  <th>Device / Profile</th>
+                  <th>Share of Monthly Spend</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Alex (You)</strong></td>
+                  <td><span class="tag tag-green">Admin</span></td>
+                  <td>Pixel 8 (Android)</td>
+                  <td><strong>₹48,200 (57.1%)</strong></td>
+                </tr>
+                <tr>
+                  <td><strong>Taylor (Partner)</strong></td>
+                  <td><span class="tag tag-blue">Editor</span></td>
+                  <td>iPhone 15 (PWA)</td>
+                  <td><strong>₹36,150 (42.9%)</strong></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div style="margin-top:20px; display:flex; gap:12px;">
+              <button class="btn btn-secondary" onclick="alert('Invite link copied: https://rajanraj2.github.io/mony/?invite=MONY-8491')">
+                <span class="material-icons-round">link</span> Copy Partner Invite Link
+              </button>
+              <button class="btn btn-secondary" onclick="alert('Added family member placeholder.')">
+                <span class="material-icons-round">person_add</span> Add Family Member
+              </button>
+            </div>
+          </div>
+
+          <!-- Split Spending Breakdown -->
+          <div class="card">
+            <h3 style="font-size:15px; font-weight:700; margin-bottom:16px;">Joint Spend Breakdown</h3>
+            <div style="display:flex; flex-direction:column; gap:14px;">
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:600;">
+                  <span>Alex's Spending (Primary)</span>
+                  <span>57.1%</span>
+                </div>
+                <div class="bar-bg"><div class="bar-fill" style="width:57.1%; background:#22c55e;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:600;">
+                  <span>Taylor's Spending (Partner)</span>
+                  <span>42.9%</span>
+                </div>
+                <div class="bar-bg"><div class="bar-fill" style="width:42.9%; background:#38bdf8;"></div></div>
+              </div>
+            </div>
+
+            <div style="margin-top:20px; padding:12px; background:#0d1117; border-radius:8px; border:1px solid var(--card-border);">
+              <div style="font-size:12px; font-weight:700; color:#fbbf24;">Shared Bill Settlement</div>
+              <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">
+                Taylor owes Alex <strong>₹6,025.00</strong> to balance 50/50 shared grocery & rent split for October.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- 7. SMS AUTO-CAPTURE QUEUE -->
       <section id="tab-sms" class="tab-page">
         <div class="card" style="margin-bottom:16px;">
@@ -916,6 +1014,7 @@
         'portfolio': 'Investment Portfolio & Returns',
         'planning': 'Wealth Planning Studio (FIRE)',
         'analytics': 'Financial Analytics & Visualizations',
+        'family': 'Family & Household Joint Finances',
         'sms': 'SMS Auto-Capture Queue',
         'mcp': 'Model Context Protocol (MCP 2) Console'
       };
