@@ -1,5 +1,5 @@
-import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:drift/native.dart';
 import 'package:mony/core/database/database.dart';
 import 'package:mony/features/accounts/data/datasources/account_dao.dart';
 import 'package:mony/features/accounts/data/repositories/account_repository_impl.dart';
@@ -23,7 +23,8 @@ void main() {
     late McpServerRepositoryImpl mcpServer;
 
     setUp(() {
-      db = AppDatabase();
+      // Use in-memory SQLite database for isolated tests without file lock
+      db = AppDatabase(NativeDatabase.memory());
       final accountDao = AccountDao(db);
       final categoryDao = CategoryDao(db);
       final txnDao = TransactionDao(db);
@@ -53,6 +54,10 @@ void main() {
       );
     });
 
+    tearDown(() async {
+      await db.close();
+    });
+
     test('tools/list returns 8 compliant tool definitions', () async {
       final request = {
         'jsonrpc': '2.0',
@@ -78,14 +83,14 @@ void main() {
         'method': 'tools/call',
         'params': {
           'name': 'mony.get_net_worth',
-          'arguments': {},
+          'arguments': <String, dynamic>{},
         },
       };
 
       final response = await mcpServer.handleJsonRpcRequest(request);
       expect(response['id'], equals(2));
+      expect(response['error'], isNull);
       expect(response['result'], isNotNull);
-      expect(response['result']['isError'], isFalse);
 
       final content = response['result']['content'] as List;
       expect(content.first['text'], contains('Current Total Net Worth'));
