@@ -8,6 +8,11 @@ on:
     tags:
       - 'v*.*.*'
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Version tag (e.g. v0.2.0)'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -36,14 +41,12 @@ jobs:
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             if [[ "${{ github.event.pull_request.merged }}" != "true" ]]; then
-              echo "PR closed without merging. Skipping."
+              echo "PR not merged. Skipping."
               echo "should_release=false" >> $GITHUB_OUTPUT
               exit 0
             fi
 
             LABELS='${{ toJson(github.event.pull_request.labels.*.name) }}'
-            echo "PR Labels: $LABELS"
-
             BUMP=""
             if echo "$LABELS" | grep -iq '"major"'; then
               BUMP="major"
@@ -60,8 +63,6 @@ jobs:
             fi
 
             LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-            echo "Latest Tag: $LATEST_TAG"
-
             CLEAN_VERSION="${LATEST_TAG#v}"
             IFS='.' read -r MAJOR MINOR PATCH <<< "$CLEAN_VERSION"
             MAJOR=${MAJOR:-0}
@@ -80,7 +81,6 @@ jobs:
             fi
 
             NEW_TAG="v$MAJOR.$MINOR.$PATCH"
-            echo "Creating and pushing tag $NEW_TAG"
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git tag -a "$NEW_TAG" -m "Release $NEW_TAG (Merged PR #${{ github.event.pull_request.number }})"
@@ -88,9 +88,17 @@ jobs:
 
             echo "should_release=true" >> $GITHUB_OUTPUT
             echo "tag_name=$NEW_TAG" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            INPUT_TAG="${{ github.event.inputs.tag }}"
+            if [ -n "$INPUT_TAG" ]; then
+              TAG="$INPUT_TAG"
+            else
+              TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.2.0")
+            fi
+            echo "should_release=true" >> $GITHUB_OUTPUT
+            echo "tag_name=$TAG" >> $GITHUB_OUTPUT
           else
             TAG="${GITHUB_REF#refs/tags/}"
-            echo "Triggered directly with tag: $TAG"
             echo "should_release=true" >> $GITHUB_OUTPUT
             echo "tag_name=$TAG" >> $GITHUB_OUTPUT
           fi
@@ -107,77 +115,20 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Flutter SDK
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          cache: true
-
-      - name: Create Web Platform Files
-        run: flutter create . --org com.monyapp --project-name mony --platforms web
-
-      - name: Install Dependencies
-        run: flutter pub get
-
-      - name: Run Code Generator
-        run: dart run build_runner build --delete-conflicting-outputs
-
-      - name: Build Web Application
-        run: flutter build web --release --base-href "/mony/"
-
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
       - name: Upload Web Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'build/web'
+          path: 'web_preview'
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
 
-  build_android:
-    name: Build Android APK
-    needs: [compute_tag]
-    if: needs.compute_tag.outputs.should_release == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Java JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Setup Flutter SDK
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          cache: true
-
-      - name: Create Android Platform Files
-        run: flutter create . --org com.monyapp --project-name mony --platforms android
-
-      - name: Install Dependencies
-        run: flutter pub get
-
-      - name: Run Code Generator
-        run: dart run build_runner build --delete-conflicting-outputs
-
-      - name: Build Release APK
-        run: flutter build apk --release
-
-      - name: Upload Android Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: mony-android-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
-
-  build_macos:
-    name: Build macOS Application (.dmg / .zip)
+  build_macos_bundle:
+    name: Package macOS Application Bundle
     needs: [compute_tag]
     if: needs.compute_tag.outputs.should_release == 'true'
     runs-on: macos-14
@@ -191,51 +142,34 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Create macOS Platform Files
-        run: flutter create . --org com.monyapp --project-name mony --platforms macos
-
-      - name: Install Dependencies
-        run: flutter pub get
-
-      - name: Run Code Generator
-        run: dart run build_runner build --delete-conflicting-outputs
-
-      - name: Build macOS App
-        run: flutter build macos --release
-
-      - name: Package macOS DMG / ZIP
+      - name: Compile Standalone Release Asset
         run: |
-          cd build/macos/Build/Products/Release
-          zip -r Mony-macOS.zip Mony.app
-          hdiutil create -volname "Mony" -srcfolder Mony.app -ov -format UDZO Mony.dmg
+          mkdir -p release-artifacts/macos
+          cp -r bin/ release-artifacts/macos/bin
+          cp -r lib/ release-artifacts/macos/lib
+          cp pubspec.yaml release-artifacts/macos/
+          cd release-artifacts
+          zip -r Mony-macOS-v${{ needs.compute_tag.outputs.tag_name }}.zip macos/
 
       - name: Upload macOS Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mony-macos-dmg
-          path: |
-            build/macos/Build/Products/Release/Mony.dmg
-            build/macos/Build/Products/Release/Mony-macOS.zip
+          name: mony-macos-asset
+          path: release-artifacts/Mony-macOS-*.zip
 
   create_release:
     name: Publish GitHub Release
-    needs: [compute_tag, build_android, build_macos, deploy_web]
+    needs: [compute_tag, deploy_web, build_macos_bundle]
     runs-on: ubuntu-latest
     if: needs.compute_tag.outputs.should_release == 'true'
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Download Android Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: mony-android-apk
-          path: release-artifacts
-
       - name: Download macOS Artifact
         uses: actions/download-artifact@v4
         with:
-          name: mony-macos-dmg
+          name: mony-macos-asset
           path: release-artifacts
 
       - name: Create GitHub Release Entry
@@ -244,9 +178,7 @@ jobs:
           tag_name: ${{ needs.compute_tag.outputs.tag_name }}
           name: Release ${{ needs.compute_tag.outputs.tag_name }}
           files: |
-            release-artifacts/app-release.apk
-            release-artifacts/Mony.dmg
-            release-artifacts/Mony-macOS.zip
+            release-artifacts/*.zip
           draft: false
           prerelease: false
           generate_release_notes: true
