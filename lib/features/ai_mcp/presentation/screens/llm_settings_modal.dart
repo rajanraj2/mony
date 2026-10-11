@@ -11,38 +11,45 @@ class LlmSettingsModal extends ConsumerStatefulWidget {
 }
 
 class _LlmSettingsModalState extends ConsumerState<LlmSettingsModal> {
-  LlmVendor _vendor = LlmVendor.openai;
-  late final TextEditingController _keyCtrl;
-  late final TextEditingController _modelCtrl;
-  late final TextEditingController _baseUrlCtrl;
+  final _keyCtrl = TextEditingController();
+  String _detectedLabel = 'Paste any key to auto-detect';
+  Color _detectedColor = Colors.grey;
 
   @override
   void initState() {
     super.initState();
-    _keyCtrl = TextEditingController();
-    _modelCtrl = TextEditingController(text: _vendor.defaultModel);
-    _baseUrlCtrl = TextEditingController(text: _vendor.defaultBaseUrl);
-
-    // Populate with existing config if saved
     Future.microtask(() async {
       final existing = await ref.read(llmClientRepositoryProvider).getConfig();
       if (existing != null && mounted) {
         setState(() {
-          _vendor = existing.vendor;
           _keyCtrl.text = existing.apiKey;
-          _modelCtrl.text = existing.modelName;
-          _baseUrlCtrl.text = existing.customBaseUrl ?? existing.vendor.defaultBaseUrl;
+          _updateDetection(existing.apiKey);
         });
       }
     });
+
+    _keyCtrl.addListener(() => _updateDetection(_keyCtrl.text));
   }
 
-  void _onVendorChanged(LlmVendor v) {
+  void _updateDetection(String key) {
+    if (key.trim().isEmpty) {
+      setState(() {
+        _detectedLabel = 'Paste any key to auto-detect';
+        _detectedColor = Colors.grey;
+      });
+      return;
+    }
+    final detected = LlmVendor.detectFromKey(key);
     setState(() {
-      _vendor = v;
-      _modelCtrl.text = v.defaultModel;
-      _baseUrlCtrl.text = v.defaultBaseUrl;
+      _detectedLabel = '✓ Detected: ${detected.vendor.displayName} (${detected.model})';
+      _detectedColor = Colors.green;
     });
+  }
+
+  @override
+  void dispose() {
+    _keyCtrl.dispose();
+    super.dispose();
   }
 
   @override
@@ -61,51 +68,51 @@ class _LlmSettingsModalState extends ConsumerState<LlmSettingsModal> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Configure Your AI / LLM Model', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+              Text('Connect Any AI Model', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
               IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
             ],
           ),
           const SizedBox(height: 8),
           Text(
-            'Bring your own API key to power Mony AI. Your key is stored strictly on your local device and never transmitted to our servers.',
+            'Just paste your API key below. Mony automatically detects whether it belongs to OpenAI, Anthropic, Gemini, Groq, OpenRouter, or Ollama and configures the model and endpoint for you.',
             style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
           ),
-          const SizedBox(height: 16),
-
-          DropdownButtonFormField<LlmVendor>(
-            value: _vendor,
-            decoration: const InputDecoration(labelText: 'AI Model Vendor', border: OutlineInputBorder()),
-            items: LlmVendor.values.map((v) => DropdownMenuItem(value: v, child: Text(v.displayName))).toList(),
-            onChanged: (v) => v != null ? _onVendorChanged(v) : null,
-          ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
 
           TextField(
             controller: _keyCtrl,
             obscureText: true,
-            decoration: const InputDecoration(
-              labelText: 'API Key (sk-...)',
-              hintText: 'Paste your secret API key here',
-              prefixIcon: Icon(Icons.key),
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: 'Paste API Key Here',
+              hintText: 'sk-..., sk-ant-..., AIzaSy..., gsk_..., or "ollama"',
+              prefixIcon: const Icon(Icons.vpn_key),
+              suffixIcon: _keyCtrl.text.isNotEmpty
+                  ? IconButton(icon: const Icon(Icons.clear), onPressed: () => _keyCtrl.clear())
+                  : null,
+              border: const OutlineInputBorder(),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
 
-          TextField(
-            controller: _modelCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Model Identifier',
-              border: OutlineInputBorder(),
+          // Detection Indicator Chip
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: _detectedColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: _detectedColor.withOpacity(0.3)),
             ),
-          ),
-          const SizedBox(height: 12),
-
-          TextField(
-            controller: _baseUrlCtrl,
-            decoration: const InputDecoration(
-              labelText: 'API Base URL (Endpoint)',
-              border: OutlineInputBorder(),
+            child: Row(
+              children: [
+                Icon(Icons.auto_awesome, size: 16, color: _detectedColor),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _detectedLabel,
+                    style: TextStyle(color: _detectedColor, fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 20),
@@ -118,7 +125,7 @@ class _LlmSettingsModalState extends ConsumerState<LlmSettingsModal> {
                     await ref.read(llmClientRepositoryProvider).clearConfig();
                     if (context.mounted) Navigator.pop(context);
                   },
-                  child: const Text('Reset / Clear Key'),
+                  child: const Text('Reset'),
                 ),
               ),
               const SizedBox(width: 12),
@@ -126,26 +133,19 @@ class _LlmSettingsModalState extends ConsumerState<LlmSettingsModal> {
                 child: FilledButton(
                   onPressed: () async {
                     final key = _keyCtrl.text.trim();
-                    if (key.isEmpty && _vendor != LlmVendor.customOpenAiCompatible) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter an API key.')));
-                      return;
-                    }
+                    if (key.isEmpty) return;
 
-                    final config = LlmProviderConfig(
-                      vendor: _vendor,
-                      apiKey: key,
-                      modelName: _modelCtrl.text.trim(),
-                      customBaseUrl: _baseUrlCtrl.text.trim(),
-                      isEnabled: true,
-                    );
-
+                    final config = LlmProviderConfig(apiKey: key);
                     await ref.read(llmClientRepositoryProvider).saveConfig(config);
+
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Saved AI key for ${_vendor.displayName}!')));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Activated ${config.detected.vendor.displayName}!')),
+                      );
                       Navigator.pop(context);
                     }
                   },
-                  child: const Text('Save & Activate'),
+                  child: const Text('Save & Connect'),
                 ),
               ),
             ],
