@@ -34,6 +34,8 @@ import '../../features/ai_mcp/data/repositories/llm_client_repository_impl.dart'
 import '../../features/ai_mcp/domain/repositories/llm_client_repository.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
+import '../../features/household/data/repositories/household_repository_impl.dart';
+import '../../features/household/domain/repositories/household_repository.dart';
 
 // Database Singleton
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -134,6 +136,14 @@ final mcpServerRepositoryProvider = Provider<IMcpServerRepository>((ref) {
 
 final llmClientRepositoryProvider = Provider<ILlmClientRepository>((ref) {
   return LlmClientRepositoryImpl(ref.watch(mcpServerRepositoryProvider));
+});
+
+final householdRepositoryProvider = Provider<IHouseholdRepository>((ref) {
+  return HouseholdRepositoryImpl(
+    ref.watch(accountRepositoryProvider),
+    ref.watch(portfolioRepositoryProvider),
+    ref.watch(transactionRepositoryProvider),
+  );
 });
 
 // Use Cases
