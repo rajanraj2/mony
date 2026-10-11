@@ -278,6 +278,9 @@
     </nav>
 
     <div class="sidebar-footer">
+      <button class="btn btn-secondary" style="width:100%; justify-content:center; margin-bottom:8px; font-size:12px;" onclick="openApiKeyModal()">
+        <span class="material-icons-round" style="font-size:16px;">key</span> Set AI Model API Key
+      </button>
       <div class="mcp-pill">
         <div class="pulse-dot"></div>
         <span>MCP 2 Server : 7432 (Ready)</span>
@@ -783,7 +786,74 @@
     </div>
   </div>
 
+
+  <!-- LLM API Key Modal -->
+  <div id="apikey-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#151b23; border:1px solid #30363d; border-radius:16px; padding:32px; width:440px; color:#f0f6fc;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="font-size:18px; font-weight:800;">Configure Your AI / LLM Model</h3>
+        <button onclick="closeApiKeyModal()" style="background:none; border:none; color:#8b949e; cursor:pointer;"><span class="material-icons-round">close</span></button>
+      </div>
+      <p style="font-size:12px; color:#8b949e; margin-bottom:20px; line-height:1.5;">
+        Bring your own API key to power conversational finance intelligence. Mony connects your chosen model directly to local financial tools. Keys are stored locally on device and never sent to external servers.
+      </p>
+
+      <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">AI Provider</label>
+      <select id="llm-vendor" onchange="updateDefaultModel(this.value)" style="width:100%; padding:10px 14px; background:#0d1117; border:1px solid #30363d; border-radius:8px; color:white; margin:6px 0 14px;">
+        <option value="openai">OpenAI (GPT-4o / GPT-4o-mini)</option>
+        <option value="anthropic">Anthropic (Claude 3.5 Sonnet)</option>
+        <option value="gemini">Google Gemini (Gemini 1.5 Pro)</option>
+        <option value="ollama">Ollama / Local (http://localhost:11434)</option>
+        <option value="openrouter">OpenRouter / Custom</option>
+      </select>
+
+      <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">Secret API Key</label>
+      <input type="password" id="input-api-key" placeholder="sk-..." style="width:100%; padding:10px 14px; background:#0d1117; border:1px solid #30363d; border-radius:8px; color:white; margin:6px 0 14px;">
+
+      <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">Model Identifier</label>
+      <input type="text" id="input-model-name" value="gpt-4o" style="width:100%; padding:10px 14px; background:#0d1117; border:1px solid #30363d; border-radius:8px; color:white; margin:6px 0 20px;">
+
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-secondary" style="flex:1; justify-content:center;" onclick="clearApiKey()">Reset Key</button>
+        <button class="btn btn-primary" style="flex:1; justify-content:center;" onclick="saveApiKey()">Save & Activate</button>
+      </div>
+    </div>
+  </div>
+
   <script>
+    function openApiKeyModal() {
+      document.getElementById('apikey-modal').style.display = 'flex';
+    }
+    function closeApiKeyModal() {
+      document.getElementById('apikey-modal').style.display = 'none';
+    }
+    function updateDefaultModel(vendor) {
+      const map = {
+        'openai': 'gpt-4o',
+        'anthropic': 'claude-3-5-sonnet-20241022',
+        'gemini': 'gemini-1.5-pro',
+        'ollama': 'llama3',
+        'openrouter': 'meta-llama/llama-3-70b-instruct'
+      };
+      document.getElementById('input-model-name').value = map[vendor] || 'gpt-4o';
+    }
+    function saveApiKey() {
+      const key = document.getElementById('input-api-key').value.trim();
+      const vendor = document.getElementById('llm-vendor').value;
+      const model = document.getElementById('input-model-name').value;
+      if (!key && vendor !== 'ollama') {
+        alert('Please enter your API key.');
+        return;
+      }
+      closeApiKeyModal();
+      alert('Active AI Model set to: ' + model + ' (' + vendor + '). Mony AI will now direct prompts to your model with local financial tool calling.');
+    }
+    function clearApiKey() {
+      document.getElementById('input-api-key').value = '';
+      closeApiKeyModal();
+      alert('API Key cleared. Mony AI is now running in local heuristic mode.');
+    }
+
     function openAuthModal() {
       document.getElementById('auth-modal').style.display = 'flex';
     }

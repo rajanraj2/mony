@@ -30,6 +30,8 @@ import '../../features/planning/data/repositories/planning_repository_impl.dart'
 import '../../features/planning/domain/repositories/planning_repository.dart';
 import '../../features/ai_mcp/data/repositories/mcp_server_repository_impl.dart';
 import '../../features/ai_mcp/domain/repositories/mcp_server_repository.dart';
+import '../../features/ai_mcp/data/repositories/llm_client_repository_impl.dart';
+import '../../features/ai_mcp/domain/repositories/llm_client_repository.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 
@@ -128,6 +130,10 @@ final mcpServerRepositoryProvider = Provider<IMcpServerRepository>((ref) {
     ref.watch(analyticsRepositoryProvider),
     ref.watch(portfolioRepositoryProvider),
   );
+});
+
+final llmClientRepositoryProvider = Provider<ILlmClientRepository>((ref) {
+  return LlmClientRepositoryImpl(ref.watch(mcpServerRepositoryProvider));
 });
 
 // Use Cases
