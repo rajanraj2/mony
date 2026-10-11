@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Version tag (e.g. v0.2.0)'
+        description: 'Version tag (e.g. v0.3.0)'
         required: false
         default: ''
 
@@ -93,7 +93,7 @@ jobs:
             if [ -n "$INPUT_TAG" ]; then
               TAG="$INPUT_TAG"
             else
-              TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.2.0")
+              TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.3.0")
             fi
             echo "should_release=true" >> $GITHUB_OUTPUT
             echo "tag_name=$TAG" >> $GITHUB_OUTPUT
@@ -127,8 +127,47 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-  build_macos_bundle:
-    name: Package macOS Application Bundle
+  build_android:
+    name: Build Android APK
+    needs: [compute_tag]
+    if: needs.compute_tag.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Generate Android Project Scaffold
+        run: flutter create . --org com.monyapp --project-name mony --platforms android
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Run Drift Code Generator
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Build Release APK
+        run: flutter build apk --release
+
+      - name: Upload Android APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mony-android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+  build_macos_dmg:
+    name: Build macOS Application (.dmg)
     needs: [compute_tag]
     if: needs.compute_tag.outputs.should_release == 'true'
     runs-on: macos-14
@@ -142,43 +181,60 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Compile Standalone Release Asset
-        run: |
-          mkdir -p release-artifacts/macos
-          cp -r bin/ release-artifacts/macos/bin
-          cp -r lib/ release-artifacts/macos/lib
-          cp pubspec.yaml release-artifacts/macos/
-          cd release-artifacts
-          zip -r Mony-macOS-v${{ needs.compute_tag.outputs.tag_name }}.zip macos/
+      - name: Generate macOS Project Scaffold
+        run: flutter create . --org com.monyapp --project-name mony --platforms macos
 
-      - name: Upload macOS Artifact
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Run Drift Code Generator
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Build Native macOS App
+        run: flutter build macos --release
+
+      - name: Package Native macOS DMG
+        run: |
+          mkdir -p release-artifacts
+          hdiutil create -volname "Mony" -srcfolder build/macos/Build/Products/Release/mony.app -ov -format UDZO release-artifacts/Mony-macOS.dmg
+          cd build/macos/Build/Products/Release
+          zip -r ../../../../release-artifacts/Mony-macOS.zip mony.app
+
+      - name: Upload macOS DMG Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mony-macos-asset
-          path: release-artifacts/Mony-macOS-*.zip
+          name: mony-macos-dmg
+          path: release-artifacts/Mony-macOS.dmg
 
   create_release:
     name: Publish GitHub Release
-    needs: [compute_tag, deploy_web, build_macos_bundle]
+    needs: [compute_tag, deploy_web, build_android, build_macos_dmg]
     runs-on: ubuntu-latest
     if: needs.compute_tag.outputs.should_release == 'true'
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Download Android Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mony-android-apk
+          path: release-assets
+
       - name: Download macOS Artifact
         uses: actions/download-artifact@v4
         with:
-          name: mony-macos-asset
-          path: release-artifacts
+          name: mony-macos-dmg
+          path: release-assets
 
-      - name: Create GitHub Release Entry
+      - name: Create Official GitHub Release Entry
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.compute_tag.outputs.tag_name }}
           name: Release ${{ needs.compute_tag.outputs.tag_name }}
           files: |
-            release-artifacts/*.zip
+            release-assets/app-release.apk
+            release-assets/Mony-macOS.dmg
           draft: false
           prerelease: false
           generate_release_notes: true
