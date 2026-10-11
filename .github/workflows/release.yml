@@ -19,9 +19,6 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # ───────────────────────────────────────────────────────────────────────────
-  # 1. COMPUTE VERSION & TAG (if triggered by PR merge)
-  # ───────────────────────────────────────────────────────────────────────────
   compute_tag:
     name: Check Labels & Compute Version
     runs-on: ubuntu-latest
@@ -92,16 +89,12 @@ jobs:
             echo "should_release=true" >> $GITHUB_OUTPUT
             echo "tag_name=$NEW_TAG" >> $GITHUB_OUTPUT
           else
-            # Triggered by push tag or workflow_dispatch
             TAG="${GITHUB_REF#refs/tags/}"
             echo "Triggered directly with tag: $TAG"
             echo "should_release=true" >> $GITHUB_OUTPUT
             echo "tag_name=$TAG" >> $GITHUB_OUTPUT
           fi
 
-  # ───────────────────────────────────────────────────────────────────────────
-  # 2. WEB DEPLOYMENT (GitHub Pages)
-  # ───────────────────────────────────────────────────────────────────────────
   deploy_web:
     name: Build & Deploy Web Application
     needs: [compute_tag]
@@ -119,6 +112,9 @@ jobs:
         with:
           channel: 'stable'
           cache: true
+
+      - name: Create Web Platform Files
+        run: flutter create . --org com.monyapp --project-name mony --platforms web
 
       - name: Install Dependencies
         run: flutter pub get
@@ -141,9 +137,6 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-  # ───────────────────────────────────────────────────────────────────────────
-  # 3. ANDROID APK BUILD
-  # ───────────────────────────────────────────────────────────────────────────
   build_android:
     name: Build Android APK
     needs: [compute_tag]
@@ -165,6 +158,9 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Create Android Platform Files
+        run: flutter create . --org com.monyapp --project-name mony --platforms android
+
       - name: Install Dependencies
         run: flutter pub get
 
@@ -180,9 +176,6 @@ jobs:
           name: mony-android-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
-  # ───────────────────────────────────────────────────────────────────────────
-  # 4. MACOS DMG BUILD
-  # ───────────────────────────────────────────────────────────────────────────
   build_macos:
     name: Build macOS Application (.dmg / .zip)
     needs: [compute_tag]
@@ -197,6 +190,9 @@ jobs:
         with:
           channel: 'stable'
           cache: true
+
+      - name: Create macOS Platform Files
+        run: flutter create . --org com.monyapp --project-name mony --platforms macos
 
       - name: Install Dependencies
         run: flutter pub get
@@ -221,9 +217,6 @@ jobs:
             build/macos/Build/Products/Release/Mony.dmg
             build/macos/Build/Products/Release/Mony-macOS.zip
 
-  # ───────────────────────────────────────────────────────────────────────────
-  # 5. GITHUB RELEASES ASSETS (Publishes APK & DMG Release)
-  # ───────────────────────────────────────────────────────────────────────────
   create_release:
     name: Publish GitHub Release
     needs: [compute_tag, build_android, build_macos, deploy_web]

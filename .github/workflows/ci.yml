@@ -21,6 +21,9 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Create Platform Scaffolds
+        run: flutter create . --org com.monyapp --project-name mony --platforms android,ios,macos,windows,linux,web
+
       - name: Install Dependencies
         run: flutter pub get
 
