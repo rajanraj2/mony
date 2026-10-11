@@ -636,9 +636,15 @@
             <div class="slider-group">
               <div class="slider-header">
                 <span>Cut Discretionary Spend:</span>
-                <span id="label-cut" style="color:var(--primary-light);">₹5,000 / mo</span>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span style="color:var(--primary-light); font-weight:700;">₹</span>
+                  <input type="number" id="input-cut-number" value="5000" min="1000" max="25000" step="500" 
+                    oninput="syncSliderFromInput(this.value)" 
+                    style="width:90px; padding:4px 8px; background:#0d1117; border:1px solid #30363d; border-radius:6px; color:#4ade80; font-weight:700; font-size:13px; font-family:'JetBrains Mono';">
+                  <span style="font-size:12px; color:var(--text-muted);">/ mo</span>
+                </div>
               </div>
-              <input type="range" min="1000" max="25000" step="1000" value="5000" oninput="updateScenario(this.value)">
+              <input type="range" id="range-cut" min="1000" max="25000" step="500" value="5000" oninput="syncInputFromSlider(this.value)">
             </div>
             <div style="display:flex; gap:12px;">
               <div style="flex:1; background:#0d1117; padding:12px; border-radius:8px;">
@@ -1194,8 +1200,19 @@
       document.getElementById('privacy-text').innerText = privacy ? 'Hidden' : 'Privacy Mode';
     }
 
-    function updateScenario(val) {
-      document.getElementById('label-cut').innerText = '₹' + parseInt(val).toLocaleString() + ' / mo';
+    function syncInputFromSlider(val) {
+      document.getElementById('input-cut-number').value = val;
+      computeScenarioImpact(val);
+    }
+
+    function syncSliderFromInput(val) {
+      const num = parseInt(val) || 1000;
+      const clamped = Math.min(25000, Math.max(1000, num));
+      document.getElementById('range-cut').value = clamped;
+      computeScenarioImpact(clamped);
+    }
+
+    function computeScenarioImpact(val) {
       const fv10 = (val * ((Math.pow(1 + 0.01, 120) - 1) / 0.01) / 100000).toFixed(1);
       const fv20 = (val * ((Math.pow(1 + 0.01, 240) - 1) / 0.01) / 100000).toFixed(1);
       document.getElementById('val-10yr').innerText = '₹' + fv10 + ' Lakhs';
