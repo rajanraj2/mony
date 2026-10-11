@@ -199,48 +199,6 @@ class _WealthPlanningScreenState extends ConsumerState<WealthPlanningScreen> {
   }
 }
 
-class _SliderRow extends StatelessWidget {
-  final String label;
-  final double value;
-  final double min;
-  final double max;
-  final double? step;
-  final String display;
-  final ValueChanged<double> onChanged;
-
-  const _SliderRow({
-    required this.label,
-    required this.value,
-    required this.min,
-    required this.max,
-    this.step,
-    required this.display,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
-            Text(display, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.deepPurple)),
-          ],
-        ),
-        Slider(
-          value: value,
-          min: min,
-          max: max,
-          onChanged: onChanged,
-        ),
-      ],
-    );
-  }
-}
-
 class _ScenarioResultBox extends StatelessWidget {
   final int years;
   final double amount;
