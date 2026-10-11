@@ -30,6 +30,8 @@ import '../../features/planning/data/repositories/planning_repository_impl.dart'
 import '../../features/planning/domain/repositories/planning_repository.dart';
 import '../../features/ai_mcp/data/repositories/mcp_server_repository_impl.dart';
 import '../../features/ai_mcp/domain/repositories/mcp_server_repository.dart';
+import '../../features/auth/data/repositories/auth_repository_impl.dart';
+import '../../features/auth/domain/repositories/auth_repository.dart';
 
 // Database Singleton
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -68,6 +70,10 @@ final assetDaoProvider = Provider<AssetDao>((ref) {
 });
 
 // Repositories
+final authRepositoryProvider = Provider<IAuthRepository>((ref) {
+  return AuthRepositoryImpl();
+});
+
 final accountRepositoryProvider = Provider<IAccountRepository>((ref) {
   return AccountRepositoryImpl(ref.watch(accountDaoProvider));
 });
