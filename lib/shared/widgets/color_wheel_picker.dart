@@ -1,3 +1,4 @@
+import 'editable_slider.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../features/settings/domain/models/custom_color_model.dart';
@@ -102,35 +103,40 @@ class _ColorWheelPickerState extends State<ColorWheelPicker> {
         const SizedBox(height: 20),
 
         // 360-Degree Hue Color Spectrum Slider
-        const Text('Hue Spectrum (360° Color Wheel)', style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
-        Slider(
+        EditableSlider(
+          label: 'Hue Spectrum (0° - 360°)',
           value: _hue,
           min: 0,
           max: 360,
+          suffix: '°',
           onChanged: (v) {
             setState(() => _hue = v);
             widget.onColorChanged(_currentColor);
           },
         ),
+        const SizedBox(height: 8),
 
         // Saturation Slider
-        const Text('Saturation', style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
-        Slider(
+        EditableSlider(
+          label: 'Saturation (0.1 - 1.0)',
           value: _saturation,
           min: 0.1,
           max: 1.0,
+          decimalDigits: 2,
           onChanged: (v) {
             setState(() => _saturation = v);
             widget.onColorChanged(_currentColor);
           },
         ),
+        const SizedBox(height: 8),
 
         // Lightness Slider
-        const Text('Brightness / Lightness', style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
-        Slider(
+        EditableSlider(
+          label: 'Brightness / Lightness (0.1 - 0.9)',
           value: _lightness,
           min: 0.1,
           max: 0.9,
+          decimalDigits: 2,
           onChanged: (v) {
             setState(() => _lightness = v);
             widget.onColorChanged(_currentColor);

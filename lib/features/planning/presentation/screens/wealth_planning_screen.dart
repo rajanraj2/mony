@@ -1,3 +1,4 @@
+import '../../../../shared/widgets/editable_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/di/providers.dart';
@@ -129,29 +130,29 @@ class _WealthPlanningScreenState extends ConsumerState<WealthPlanningScreen> {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  _SliderRow(
+                  EditableSlider(
                     label: 'Target Retirement Age',
                     value: _retirementAge,
                     min: _currentAge + 1,
                     max: 75,
-                    display: '${_retirementAge.toInt()} yrs',
+                    suffix: ' yrs',
                     onChanged: (v) => setState(() => _retirementAge = v),
                   ),
-                  _SliderRow(
+                  EditableSlider(
                     label: 'Current Monthly Expenses',
                     value: _monthlyExpenses,
                     min: 15000,
                     max: 300000,
-                    step: 5000,
-                    display: '₹${_monthlyExpenses.toInt()}',
+                    prefix: '₹',
                     onChanged: (v) => setState(() => _monthlyExpenses = v),
                   ),
-                  _SliderRow(
+                  EditableSlider(
                     label: 'Expected Portfolio Return',
                     value: _expectedReturn,
                     min: 8.0,
                     max: 16.0,
-                    display: '${_expectedReturn.toStringAsFixed(1)}%',
+                    suffix: '%',
+                    decimalDigits: 1,
                     onChanged: (v) => setState(() => _expectedReturn = v),
                   ),
                 ],
@@ -173,12 +174,12 @@ class _WealthPlanningScreenState extends ConsumerState<WealthPlanningScreen> {
                     'If you cut discretionary expenses by ₹${_cutExpensesAmount.toInt()}/month and invest it:',
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
-                  Slider(
+                  EditableSlider(
+                    label: 'Monthly Reduction Amount',
                     value: _cutExpensesAmount,
                     min: 1000,
                     max: 25000,
-                    divisions: 24,
-                    label: '₹${_cutExpensesAmount.toInt()}',
+                    prefix: '₹',
                     onChanged: (v) => setState(() => _cutExpensesAmount = v),
                   ),
                   Row(
@@ -194,48 +195,6 @@ class _WealthPlanningScreenState extends ConsumerState<WealthPlanningScreen> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _SliderRow extends StatelessWidget {
-  final String label;
-  final double value;
-  final double min;
-  final double max;
-  final double? step;
-  final String display;
-  final ValueChanged<double> onChanged;
-
-  const _SliderRow({
-    required this.label,
-    required this.value,
-    required this.min,
-    required this.max,
-    this.step,
-    required this.display,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
-            Text(display, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.deepPurple)),
-          ],
-        ),
-        Slider(
-          value: value,
-          min: min,
-          max: max,
-          onChanged: onChanged,
-        ),
-      ],
     );
   }
 }
