@@ -149,7 +149,11 @@ jobs:
           cache: true
 
       - name: Generate Android Project Scaffold
-        run: flutter create . --org com.monyapp --project-name mony --platforms android
+        run: |
+          flutter create . --org com.monyapp --project-name mony --platforms android
+          # Set compileSdk and targetSdk to 36 for modern android plugin compatibility
+          sed -i 's/compileSdk = .*/compileSdk = 36/g' android/app/build.gradle || true
+          sed -i 's/compileSdkVersion .*/compileSdkVersion 36/g' android/app/build.gradle || true
 
       - name: Install Dependencies
         run: flutter pub get
