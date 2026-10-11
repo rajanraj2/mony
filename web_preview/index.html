@@ -300,9 +300,13 @@
     <header class="topbar">
       <div class="page-title" id="page-heading">Financial Overview</div>
       <div class="topbar-actions">
+        <button class="btn btn-secondary" onclick="openIconPickerModal()">
+          <span class="material-icons-round">search</span>
+          <span>Search Icons</span>
+        </button>
         <button class="btn btn-secondary" onclick="openThemeModal()">
           <span class="material-icons-round">palette</span>
-          <span>Theme & Styling</span>
+          <span>Theme & Colors</span>
         </button>
         <button class="btn btn-secondary" onclick="openAuthModal()" id="btn-auth-profile">
           <span class="material-icons-round">account_circle</span>
@@ -935,14 +939,23 @@
         <button class="btn btn-secondary" style="justify-content:center; font-size:12px;" onclick="applyThemeMode('light')">Clean Light</button>
       </div>
 
-      <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">Primary Accent Color Palette</label>
-      <div style="display:flex; gap:10px; margin:10px 0 20px;">
-        <div onclick="applyAccent('#15803d', '#22c55e')" style="width:36px; height:36px; border-radius:50%; background:#22c55e; cursor:pointer; border:2px solid white;"></div>
-        <div onclick="applyAccent('#1d4ed8', '#3b82f6')" style="width:36px; height:36px; border-radius:50%; background:#3b82f6; cursor:pointer;"></div>
-        <div onclick="applyAccent('#6b21a8', '#a855f7')" style="width:36px; height:36px; border-radius:50%; background:#a855f7; cursor:pointer;"></div>
-        <div onclick="applyAccent('#b91c1c', '#ef4444')" style="width:36px; height:36px; border-radius:50%; background:#ef4444; cursor:pointer;"></div>
-        <div onclick="applyAccent('#b45309', '#f59e0b')" style="width:36px; height:36px; border-radius:50%; background:#f59e0b; cursor:pointer;"></div>
-        <div onclick="applyAccent('#0f766e', '#14b8a6')" style="width:36px; height:36px; border-radius:50%; background:#14b8a6; cursor:pointer;"></div>
+      <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">360° Color Spectrum Wheel</label>
+      <div style="margin:8px 0 16px;">
+        <input type="color" id="native-color-picker" value="#22c55e" oninput="applyCustomHex(this.value)" style="width:100%; height:44px; border:none; border-radius:8px; cursor:pointer; background:none;">
+        <div style="display:flex; justify-content:space-between; font-size:11px; color:#8b949e; margin-top:4px;">
+          <span>Current Hex: <strong id="hex-label" style="color:white; font-family:'JetBrains Mono';">#22C55E</strong></span>
+          <span>Click wheel above for custom color</span>
+        </div>
+      </div>
+
+      <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">Multi-Color Gradient Presets</label>
+      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:8px 0 20px;">
+        <div onclick="applyGradient('linear-gradient(135deg, #15803d, #047857)')" style="height:36px; border-radius:8px; background:linear-gradient(135deg, #15803d, #047857); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:white;">Aurora</div>
+        <div onclick="applyGradient('linear-gradient(135deg, #1e3a8a, #0284c7)')" style="height:36px; border-radius:8px; background:linear-gradient(135deg, #1e3a8a, #0284c7); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:white;">Sapphire</div>
+        <div onclick="applyGradient('linear-gradient(135deg, #581c87, #a855f7)')" style="height:36px; border-radius:8px; background:linear-gradient(135deg, #581c87, #a855f7); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:white;">Amethyst</div>
+        <div onclick="applyGradient('linear-gradient(135deg, #991b1b, #f97316)')" style="height:36px; border-radius:8px; background:linear-gradient(135deg, #991b1b, #f97316); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:white;">Sunset</div>
+        <div onclick="applyGradient('linear-gradient(135deg, #0f172a, #06b6d4)')" style="height:36px; border-radius:8px; background:linear-gradient(135deg, #0f172a, #06b6d4); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:white;">Cyberpunk</div>
+        <div onclick="applyGradient('linear-gradient(135deg, #78350f, #f59e0b)')" style="height:36px; border-radius:8px; background:linear-gradient(135deg, #78350f, #f59e0b); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:white;">Gold</div>
       </div>
 
       <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -955,6 +968,77 @@
   <script>
     function openThemeModal() { document.getElementById('theme-modal').style.display = 'flex'; }
     function closeThemeModal() { document.getElementById('theme-modal').style.display = 'none'; }
+
+
+    function openIconPickerModal() {
+      document.getElementById('icon-modal').style.display = 'flex';
+      renderIcons(iconList);
+    }
+    function closeIconPickerModal() {
+      document.getElementById('icon-modal').style.display = 'none';
+    }
+
+    const iconList = [
+      { id: 'account_balance', name: 'Bank', tags: 'bank vault savings branch' },
+      { id: 'credit_card', name: 'Credit Card', tags: 'card visa mastercard debit' },
+      { id: 'account_balance_wallet', name: 'Wallet', tags: 'wallet cash money' },
+      { id: 'payments', name: 'Cash', tags: 'cash notes bills rupee dollar' },
+      { id: 'trending_up', name: 'Stocks', tags: 'stocks equity shares cagr profit' },
+      { id: 'show_chart', name: 'Crypto', tags: 'crypto bitcoin market etf' },
+      { id: 'restaurant', name: 'Dining', tags: 'food dinner lunch zomato swiggy' },
+      { id: 'local_cafe', name: 'Coffee', tags: 'coffee tea cafe chai starbucks' },
+      { id: 'local_grocery_store', name: 'Groceries', tags: 'groceries market supermarket vegetables' },
+      { id: 'directions_car', name: 'Car / Taxi', tags: 'car uber ola taxi commute' },
+      { id: 'local_gas_station', name: 'Fuel', tags: 'fuel petrol diesel gas cng' },
+      { id: 'flight', name: 'Flights', tags: 'plane flight travel vacation trip' },
+      { id: 'shopping_bag', name: 'Shopping', tags: 'shopping mall amazon clothes' },
+      { id: 'home', name: 'Rent', tags: 'home house rent flat apartment' },
+      { id: 'movie', name: 'Movies', tags: 'movie cinema netflix entertainment' },
+      { id: 'fitness_center', name: 'Gym', tags: 'gym fitness workout health sports' },
+      { id: 'medical_services', name: 'Medical', tags: 'medical doctor hospital clinic health' },
+      { id: 'school', name: 'Education', tags: 'college school education tuition fee books' },
+      { id: 'savings', name: 'Savings', tags: 'piggy save goal deposit' },
+      { id: 'receipt_long', name: 'Bills', tags: 'bill receipt utility invoice tax' }
+    ];
+
+    function renderIcons(list) {
+      const grid = document.getElementById('icon-grid');
+      grid.innerHTML = '';
+      list.forEach(i => {
+        grid.innerHTML += `
+          <div onclick="selectIcon('${i.id}', '${i.name}')" style="background:#0d1117; padding:12px 6px; border-radius:10px; display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; border:1px solid var(--card-border);">
+            <span class="material-icons-round" style="font-size:26px; color:#38bdf8;">${i.id}</span>
+            <span style="font-size:10px; color:#8b949e; text-align:center; font-weight:600;">${i.name}</span>
+          </div>
+        `;
+      });
+    }
+
+    function filterIcons(query) {
+      const q = query.toLowerCase().trim();
+      if (!q) { renderIcons(iconList); return; }
+      const filtered = iconList.filter(i => i.name.toLowerCase().includes(q) || i.tags.includes(q));
+      renderIcons(filtered);
+    }
+
+    function selectIcon(id, name) {
+      closeIconPickerModal();
+      alert("Icon Selected: " + name + " (" + id + ")\n\nYou can assign this custom icon to any account, card type, or expense category!");
+    }
+
+    function applyCustomHex(hex) {
+      document.getElementById('hex-label').innerText = hex.toUpperCase();
+      document.documentElement.style.setProperty('--primary', hex);
+      document.documentElement.style.setProperty('--primary-light', hex);
+    }
+
+    function applyGradient(grad) {
+      document.querySelector('.brand-icon').style.background = grad;
+      document.querySelector('.page-title').style.background = grad;
+      document.querySelector('.page-title').style.webkitBackgroundClip = 'text';
+      document.querySelector('.page-title').style.webkitTextFillColor = 'transparent';
+      alert('Applied custom multi-color gradient theme!');
+    }
 
     function applyAccent(primary, light) {
       document.documentElement.style.setProperty('--primary', primary);
@@ -1133,5 +1217,21 @@
       }
     }
   </script>
+
+  <!-- Searchable Icon Picker Modal -->
+  <div id="icon-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#151b23; border:1px solid #30363d; border-radius:16px; padding:32px; width:520px; color:#f0f6fc; max-height:85vh; display:flex; flex-direction:column;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="font-size:18px; font-weight:800;">Search & Select Any Icon</h3>
+        <button onclick="closeIconPickerModal()" style="background:none; border:none; color:#8b949e; cursor:pointer;"><span class="material-icons-round">close</span></button>
+      </div>
+      <input type="text" id="icon-search-input" oninput="filterIcons(this.value)" placeholder="Search by name, category, or tag (e.g. food, taxi, card, crypto)..." style="width:100%; padding:12px 14px; background:#0d1117; border:1px solid #30363d; border-radius:8px; color:white; margin-bottom:16px;">
+      
+      <div id="icon-grid" style="display:grid; grid-template-columns:repeat(5, 1fr); gap:12px; overflow-y:auto; flex:1; padding-right:4px;">
+        <!-- Icons injected dynamically -->
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
