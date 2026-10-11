@@ -36,6 +36,8 @@ import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/household/data/repositories/household_repository_impl.dart';
 import '../../features/household/domain/repositories/household_repository.dart';
+import '../../features/settings/data/repositories/theme_repository_impl.dart';
+import '../../features/settings/domain/repositories/theme_repository.dart';
 
 // Database Singleton
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -74,6 +76,10 @@ final assetDaoProvider = Provider<AssetDao>((ref) {
 });
 
 // Repositories
+final themeRepositoryProvider = Provider<IThemeRepository>((ref) {
+  return ThemeRepositoryImpl();
+});
+
 final authRepositoryProvider = Provider<IAuthRepository>((ref) {
   return AuthRepositoryImpl();
 });
