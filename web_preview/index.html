@@ -798,20 +798,17 @@
         Bring your own API key to power conversational finance intelligence. Mony connects your chosen model directly to local financial tools. Keys are stored locally on device and never sent to external servers.
       </p>
 
-      <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">AI Provider</label>
-      <select id="llm-vendor" onchange="updateDefaultModel(this.value)" style="width:100%; padding:10px 14px; background:#0d1117; border:1px solid #30363d; border-radius:8px; color:white; margin:6px 0 14px;">
-        <option value="openai">OpenAI (GPT-4o / GPT-4o-mini)</option>
-        <option value="anthropic">Anthropic (Claude 3.5 Sonnet)</option>
-        <option value="gemini">Google Gemini (Gemini 1.5 Pro)</option>
-        <option value="ollama">Ollama / Local (http://localhost:11434)</option>
-        <option value="openrouter">OpenRouter / Custom</option>
-      </select>
+      <p style="font-size:12px; color:#8b949e; margin-bottom:16px;">
+        No need to pick vendors or models. Simply paste any API key below. Mony instantly recognizes the provider and sets up the endpoint and default model automatically.
+      </p>
 
-      <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">Secret API Key</label>
-      <input type="password" id="input-api-key" placeholder="sk-..." style="width:100%; padding:10px 14px; background:#0d1117; border:1px solid #30363d; border-radius:8px; color:white; margin:6px 0 14px;">
+      <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">API Key</label>
+      <input type="password" id="input-api-key" oninput="detectVendor(this.value)" placeholder="sk-..., sk-ant-..., AIzaSy..., gsk_..., or 'ollama'" style="width:100%; padding:12px 14px; background:#0d1117; border:1px solid #30363d; border-radius:8px; color:white; margin:6px 0 12px; font-family:'JetBrains Mono', monospace; font-size:12px;">
 
-      <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">Model Identifier</label>
-      <input type="text" id="input-model-name" value="gpt-4o" style="width:100%; padding:10px 14px; background:#0d1117; border:1px solid #30363d; border-radius:8px; color:white; margin:6px 0 20px;">
+      <div id="detection-badge" style="display:flex; align-items:center; gap:8px; padding:10px 12px; background:rgba(255,255,255,0.04); border-radius:8px; border:1px solid var(--card-border); margin-bottom:20px; font-size:12px; font-weight:600; color:#8b949e;">
+        <span class="material-icons-round" style="font-size:16px;">auto_awesome</span>
+        <span id="detection-text">Paste any key to auto-detect model & vendor</span>
+      </div>
 
       <div style="display:flex; gap:10px;">
         <button class="btn btn-secondary" style="flex:1; justify-content:center;" onclick="clearApiKey()">Reset Key</button>
@@ -827,26 +824,53 @@
     function closeApiKeyModal() {
       document.getElementById('apikey-modal').style.display = 'none';
     }
-    function updateDefaultModel(vendor) {
-      const map = {
-        'openai': 'gpt-4o',
-        'anthropic': 'claude-3-5-sonnet-20241022',
-        'gemini': 'gemini-1.5-pro',
-        'ollama': 'llama3',
-        'openrouter': 'meta-llama/llama-3-70b-instruct'
-      };
-      document.getElementById('input-model-name').value = map[vendor] || 'gpt-4o';
+    function detectVendor(key) {
+      const k = key.trim();
+      const badge = document.getElementById('detection-badge');
+      const text = document.getElementById('detection-text');
+
+      if (!k) {
+        text.innerText = "Paste any key to auto-detect model & vendor";
+        badge.style.borderColor = "var(--card-border)";
+        badge.style.color = "#8b949e";
+        return;
+      }
+
+      if (k.startsWith('sk-ant-')) {
+        text.innerText = "✓ Detected: Anthropic (Claude 3.5 Sonnet)";
+        badge.style.borderColor = "#22c55e";
+        badge.style.color = "#4ade80";
+      } else if (k.startsWith('AIzaSy')) {
+        text.innerText = "✓ Detected: Google Gemini (Gemini 1.5 Pro)";
+        badge.style.borderColor = "#22c55e";
+        badge.style.color = "#4ade80";
+      } else if (k.startsWith('gsk_')) {
+        text.innerText = "✓ Detected: Groq Cloud (Llama 3.3 70B)";
+        badge.style.borderColor = "#22c55e";
+        badge.style.color = "#4ade80";
+      } else if (k.startsWith('sk-or-')) {
+        text.innerText = "✓ Detected: OpenRouter (Universal Gateway)";
+        badge.style.borderColor = "#22c55e";
+        badge.style.color = "#4ade80";
+      } else if (k.toLowerCase() === 'ollama' || k.startsWith('http')) {
+        text.innerText = "✓ Detected: Local Ollama (llama3 on localhost:11434)";
+        badge.style.borderColor = "#22c55e";
+        badge.style.color = "#4ade80";
+      } else {
+        text.innerText = "✓ Detected: OpenAI (GPT-4o)";
+        badge.style.borderColor = "#22c55e";
+        badge.style.color = "#4ade80";
+      }
     }
+
     function saveApiKey() {
       const key = document.getElementById('input-api-key').value.trim();
-      const vendor = document.getElementById('llm-vendor').value;
-      const model = document.getElementById('input-model-name').value;
-      if (!key && vendor !== 'ollama') {
-        alert('Please enter your API key.');
+      if (!key) {
+        alert('Please paste an API key.');
         return;
       }
       closeApiKeyModal();
-      alert('Active AI Model set to: ' + model + ' (' + vendor + '). Mony AI will now direct prompts to your model with local financial tool calling.');
+      alert('Key saved! Mony has auto-configured the model and endpoint. Your prompts will now route to your chosen model with local tool execution.');
     }
     function clearApiKey() {
       document.getElementById('input-api-key').value = '';
