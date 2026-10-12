@@ -1,3 +1,4 @@
+import '../../../../shared/widgets/mony_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/di/providers.dart';
@@ -78,7 +79,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(Icons.account_balance_wallet_outlined, size: 64, color: Color(0xFF1B6B3A)),
+                const Center(child: MonyLogo(size: 72, hasSquircleBackground: true)),
                 const SizedBox(height: 16),
                 Text(
                   _isSignUp ? 'Sync Across All Your Devices' : 'Welcome Back to Mony',

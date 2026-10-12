@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%" shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="bg-glow" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#0E1726" />
+      <stop offset="100%" stop-color="#04060A" />
+    </radialGradient>
+
+    <!-- Ambient Core Glow -->
+    <radialGradient id="brand-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00F5A0" stop-opacity="0.3" />
+      <stop offset="50%" stop-color="#00D09C" stop-opacity="0.1" />
+      <stop offset="100%" stop-color="#00D09C" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Facet 1: Left Wing (Ascending Base) -->
+    <linearGradient id="grad-left" x1="0%" y1="100%" x2="50%" y2="0%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="40%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#00F5A0" />
+    </linearGradient>
+
+    <!-- Facet 2: Center Chevron / AI Growth Peak -->
+    <linearGradient id="grad-center" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#047857" />
+      <stop offset="45%" stop-color="#00D09C" />
+      <stop offset="100%" stop-color="#38BDF8" />
+    </linearGradient>
+
+    <!-- Facet 3: Right Pillar (Forward Momentum) -->
+    <linearGradient id="grad-right" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0F766E" />
+      <stop offset="60%" stop-color="#06B6D4" />
+      <stop offset="100%" stop-color="#00E5FF" />
+    </linearGradient>
+
+    <!-- Top Vault Cap Light Accent -->
+    <linearGradient id="grad-cap" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.7" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.1" />
+    </linearGradient>
+
+    <!-- Card Edge Highlight -->
+    <linearGradient id="border-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981" stop-opacity="0.5" />
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.1" />
+      <stop offset="100%" stop-color="#06B6D4" stop-opacity="0.4" />
+    </linearGradient>
+  </defs>
+
+  <!-- App Squircle Tile -->
+  <rect width="512" height="512" rx="128" fill="url(#bg-glow)" />
+  <rect width="510" height="510" x="1" y="1" rx="127" fill="none" stroke="url(#border-glow)" stroke-width="2.5" />
+
+  <!-- Ambient Glow -->
+  <circle cx="256" cy="245" r="175" fill="url(#brand-glow)" />
+
+  <!-- Logo Mark ("M" Monogram with Built-in Ascending Vector) -->
+  <g id="mony-mark">
+    <!-- Left Stemma / Upward Beam -->
+    <path 
+      d="M 124 372 
+         L 124 220 
+         C 124 204, 134 190, 149 184 
+         L 204 162 
+         L 204 316 
+         C 204 332, 194 346, 179 352 
+         L 124 372 Z" 
+      fill="url(#grad-left)" 
+    />
+
+    <!-- Right Return Stemma -->
+    <path 
+      d="M 388 372 
+         L 388 220 
+         C 388 204, 378 190, 363 184 
+         L 308 162 
+         L 308 316 
+         C 308 332, 318 346, 333 352 
+         L 388 372 Z" 
+      fill="url(#grad-right)" 
+    />
+
+    <!-- Center Folded Growth Arrow (Interlocks to build the 'M') -->
+    <path 
+      d="M 179 240 
+         L 242 144 
+         C 250 132, 262 132, 270 144 
+         L 333 240 
+         L 282 260 
+         L 256 220 
+         L 230 260 
+         Z" 
+      fill="url(#grad-center)"
+    />
+
+    <!-- Overlapping Ribbon Diamond: Apex Finisher (Isometric Prism) -->
+    <path 
+      d="M 256 136 
+         L 304 208 
+         L 256 230 
+         L 208 208 
+         Z" 
+      fill="url(#grad-cap)" 
+    />
+
+    <!-- Intersecting Mobius Core Segment (Visual Anchor) -->
+    <path 
+      d="M 204 274 
+         L 256 210 
+         L 308 274 
+         L 280 348 
+         C 268 356, 244 356, 232 348 
+         Z" 
+      fill="url(#grad-left)" 
+      opacity="0.95"
+    />
+
+    <!-- Glass Core Accent: AI Node (The Growth Prism) -->
+    <polygon 
+      points="256,178 278,212 256,226 234,212" 
+      fill="#FFFFFF" 
+      opacity="0.9" 
+    />
+  </g>
+</svg>
