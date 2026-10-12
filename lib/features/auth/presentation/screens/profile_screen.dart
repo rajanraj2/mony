@@ -19,7 +19,7 @@ class ProfileScreen extends ConsumerWidget {
 
     final userName = authState?.displayName ?? 'Zorax';
     final userEmail = authState?.email ?? 'zorax@mony.app';
-    final isSignedIn = authState?.authProvider != AuthProviderType.localGuest;
+    final isSignedIn = !(authState?.isGuest ?? true);
 
     return Scaffold(
       appBar: AppBar(
@@ -145,9 +145,7 @@ class ProfileScreen extends ConsumerWidget {
                     isSelected: themeConfig.themeMode == AppThemeMode.dark ||
                         themeConfig.themeMode == AppThemeMode.amoledBlack,
                     onTap: () {
-                      ref.read(themeRepositoryProvider).updateThemeConfig(
-                            themeConfig.copyWith(themeMode: AppThemeMode.dark),
-                          );
+                      ref.read(themeRepositoryProvider).updateThemeMode(AppThemeMode.dark);
                     },
                   ),
                   const SizedBox(width: 8),
@@ -158,9 +156,7 @@ class ProfileScreen extends ConsumerWidget {
                     icon: Icons.light_mode,
                     isSelected: themeConfig.themeMode == AppThemeMode.light,
                     onTap: () {
-                      ref.read(themeRepositoryProvider).updateThemeConfig(
-                            themeConfig.copyWith(themeMode: AppThemeMode.light),
-                          );
+                      ref.read(themeRepositoryProvider).updateThemeMode(AppThemeMode.light);
                     },
                   ),
                   const SizedBox(width: 8),
@@ -171,9 +167,7 @@ class ProfileScreen extends ConsumerWidget {
                     icon: Icons.brightness_auto,
                     isSelected: themeConfig.themeMode == AppThemeMode.system,
                     onTap: () {
-                      ref.read(themeRepositoryProvider).updateThemeConfig(
-                            themeConfig.copyWith(themeMode: AppThemeMode.system),
-                          );
+                      ref.read(themeRepositoryProvider).updateThemeMode(AppThemeMode.system);
                     },
                   ),
                 ],
