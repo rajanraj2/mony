@@ -1,3 +1,5 @@
+import '../../features/transactions/data/repositories/template_repository_impl.dart';
+import '../../features/transactions/domain/repositories/template_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../database/database.dart';
 import '../../features/accounts/data/datasources/account_dao.dart';
@@ -90,6 +92,10 @@ final accountRepositoryProvider = Provider<IAccountRepository>((ref) {
 
 final categoryRepositoryProvider = Provider<ICategoryRepository>((ref) {
   return CategoryRepositoryImpl(ref.watch(categoryDaoProvider));
+});
+
+final templateRepositoryProvider = Provider<ITemplateRepository>((ref) {
+  return TemplateRepositoryImpl();
 });
 
 final transactionRepositoryProvider = Provider<ITransactionRepository>((ref) {
