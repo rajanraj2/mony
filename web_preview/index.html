@@ -425,11 +425,140 @@
         </div>
       </section>
 
-      <!-- 2. TRANSACTIONS -->
+      <!-- 2. TRANSACTIONS & TEMPLATES -->
       <section id="tab-transactions" class="tab-page">
+        <!-- Quick Templates Bar at Top -->
+        <div class="card" style="margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-size:12px; font-weight:700; color:#8b949e; text-transform:uppercase; display:flex; align-items:center; gap:6px;">
+              <span class="material-icons-round" style="color:#fbbf24; font-size:18px;">flash_on</span>
+              <span>1-Tap Transaction Templates</span>
+            </div>
+            <span style="font-size:11px; color:#8b949e;">Click any template to auto-populate fields below</span>
+          </div>
+
+          <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:6px;">
+            <button class="btn btn-secondary" onclick="applyWebTemplate('coffee')" style="white-space:nowrap; font-size:12px; border-color:rgba(121,85,72,0.4);">
+              <span>☕ Morning Coffee</span> <strong style="color:#4ade80;">₹150</strong>
+            </button>
+            <button class="btn btn-secondary" onclick="applyWebTemplate('metro')" style="white-space:nowrap; font-size:12px; border-color:rgba(25,118,210,0.4);">
+              <span>🚇 Metro Commute</span> <strong style="color:#4ade80;">₹60</strong>
+            </button>
+            <button class="btn btn-secondary" onclick="applyWebTemplate('groceries')" style="white-space:nowrap; font-size:12px; border-color:rgba(67,160,71,0.4);">
+              <span>🛒 Grocery Run</span> <strong style="color:#4ade80;">₹1,200</strong>
+            </button>
+            <button class="btn btn-secondary" onclick="applyWebTemplate('netflix')" style="white-space:nowrap; font-size:12px; border-color:rgba(229,9,20,0.4);">
+              <span>🍿 Netflix OTT</span> <strong style="color:#4ade80;">₹649</strong>
+            </button>
+            <button class="btn btn-secondary" onclick="applyWebTemplate('electricity')" style="white-space:nowrap; font-size:12px; border-color:rgba(251,140,0,0.4);">
+              <span>⚡ Electricity Bill</span> <strong style="color:#4ade80;">₹2,500</strong>
+            </button>
+            <button class="btn btn-secondary" onclick="applyWebTemplate('rent')" style="white-space:nowrap; font-size:12px; border-color:rgba(142,36,170,0.4);">
+              <span>🏠 House Rent</span> <strong style="color:#4ade80;">₹25,000</strong>
+            </button>
+            <button class="btn btn-secondary" onclick="applyWebTemplate('sip')" style="white-space:nowrap; font-size:12px; border-color:rgba(0,137,123,0.4);">
+              <span>📈 Mutual Fund SIP</span> <strong style="color:#4ade80;">₹5,000</strong>
+            </button>
+            <button class="btn btn-secondary" onclick="applyWebTemplate('salary')" style="white-space:nowrap; font-size:12px; border-color:rgba(46,125,50,0.4);">
+              <span>💼 Monthly Salary</span> <strong style="color:#38bdf8;">₹85,000</strong>
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Transaction Entry Card with Labels & Categories below inputs -->
+        <div class="card" style="margin-bottom:20px; border:1px solid #30363d;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h3 style="font-size:14px; font-weight:700; color:white; display:flex; align-items:center; gap:6px;">
+              <span class="material-icons-round" style="color:#38bdf8;">edit_note</span>
+              <span>Quick Record Transaction</span>
+            </h3>
+            <span id="template-applied-badge" style="display:none; font-size:11px; color:#4ade80; background:rgba(74,222,128,0.15); padding:2px 8px; border-radius:4px; font-weight:700;">Template Loaded</span>
+          </div>
+
+          <!-- Input Fields Row -->
+          <div style="display:grid; grid-template-columns:140px 1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div>
+              <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">Amount (₹)</label>
+              <input type="number" id="txn-input-amount" placeholder="e.g. 250" style="width:100%; padding:10px; background:#0d1117; border:1px solid #30363d; border-radius:8px; color:white; font-size:15px; font-weight:700; font-family:'JetBrains Mono'; margin-top:4px;">
+            </div>
+            <div>
+              <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">Payee / Merchant</label>
+              <input type="text" id="txn-input-payee" placeholder="e.g. Starbucks, Uber, Zomato" style="width:100%; padding:10px; background:#0d1117; border:1px solid #30363d; border-radius:8px; color:white; margin-top:4px;">
+            </div>
+            <div>
+              <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">Account</label>
+              <select id="txn-input-account" style="width:100%; padding:10px; background:#0d1117; border:1px solid #30363d; border-radius:8px; color:white; margin-top:4px;">
+                <option value="HDFC Salary">HDFC Salary Account (₹45,200)</option>
+                <option value="ICICI Credit Card">ICICI Sapphiro Credit Card</option>
+                <option value="Cash Wallet">Cash Wallet (₹3,500)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 1. CATEGORY SELECTION (Just below input field) -->
+          <div style="margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">Category / Spend Type (Select One)</label>
+              <button onclick="addCustomCategoryPrompt()" style="background:none; border:none; color:#60a5fa; font-size:11px; cursor:pointer; font-weight:700;">+ Add Category</button>
+            </div>
+            <div id="category-chips-row" style="display:flex; flex-wrap:wrap; gap:6px;">
+              <button class="btn btn-primary" onclick="selectWebCategory('Food & Dining', this)" style="padding:4px 10px; font-size:11px; height:28px;">🍽️ Food & Dining</button>
+              <button class="btn btn-secondary" onclick="selectWebCategory('Transportation', this)" style="padding:4px 10px; font-size:11px; height:28px;">🚗 Transportation</button>
+              <button class="btn btn-secondary" onclick="selectWebCategory('Housing & Rent', this)" style="padding:4px 10px; font-size:11px; height:28px;">🏠 Housing & Rent</button>
+              <button class="btn btn-secondary" onclick="selectWebCategory('Entertainment', this)" style="padding:4px 10px; font-size:11px; height:28px;">🎬 Entertainment</button>
+              <button class="btn btn-secondary" onclick="selectWebCategory('Shopping', this)" style="padding:4px 10px; font-size:11px; height:28px;">🛍️ Shopping</button>
+              <button class="btn btn-secondary" onclick="selectWebCategory('Utilities & Bills', this)" style="padding:4px 10px; font-size:11px; height:28px;">⚡ Utilities & Bills</button>
+              <button class="btn btn-secondary" onclick="selectWebCategory('Investments', this)" style="padding:4px 10px; font-size:11px; height:28px;">📈 Investments</button>
+              <button class="btn btn-secondary" onclick="selectWebCategory('Salary', this)" style="padding:4px 10px; font-size:11px; height:28px;">💼 Salary</button>
+            </div>
+          </div>
+
+          <!-- 2. LINKED BUDGET SELECTION (Just below category) -->
+          <div style="margin-bottom:12px;">
+            <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase; margin-bottom:6px; display:block;">Linked Budget</label>
+            <div id="budget-chips-row" style="display:flex; flex-wrap:wrap; gap:6px;">
+              <button class="btn btn-primary" onclick="selectWebBudget('Monthly Food (₹15,000)', this)" style="padding:4px 10px; font-size:11px; height:28px;">Food Budget (₹15,000)</button>
+              <button class="btn btn-secondary" onclick="selectWebBudget('Transit Budget (₹5,000)', this)" style="padding:4px 10px; font-size:11px; height:28px;">Transit Budget (₹5,000)</button>
+              <button class="btn btn-secondary" onclick="selectWebBudget('Entertainment (₹4,000)', this)" style="padding:4px 10px; font-size:11px; height:28px;">Entertainment Budget (₹4,000)</button>
+              <button class="btn btn-secondary" onclick="selectWebBudget('None', this)" style="padding:4px 10px; font-size:11px; height:28px;">No Specific Budget</button>
+            </div>
+          </div>
+
+          <!-- 3. LABELS & TAGS MULTI-SELECT CHIPS (Just below budget) -->
+          <div style="margin-bottom:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">Labels & Tags (Select Any)</label>
+              <button onclick="addCustomTagPrompt()" style="background:none; border:none; color:#a78bfa; font-size:11px; cursor:pointer; font-weight:700;">+ Add Tag</button>
+            </div>
+            <div id="tags-chips-row" style="display:flex; flex-wrap:wrap; gap:6px;">
+              <button class="btn btn-primary tag-toggle" onclick="toggleWebTag(this, '#essential')" style="padding:4px 10px; font-size:11px; height:28px; background:#8b5cf6; border-color:#8b5cf6;">#essential</button>
+              <button class="btn btn-secondary tag-toggle" onclick="toggleWebTag(this, '#discretionary')" style="padding:4px 10px; font-size:11px; height:28px;">#discretionary</button>
+              <button class="btn btn-secondary tag-toggle" onclick="toggleWebTag(this, '#routine')" style="padding:4px 10px; font-size:11px; height:28px;">#routine</button>
+              <button class="btn btn-secondary tag-toggle" onclick="toggleWebTag(this, '#work')" style="padding:4px 10px; font-size:11px; height:28px;">#work</button>
+              <button class="btn btn-secondary tag-toggle" onclick="toggleWebTag(this, '#personal')" style="padding:4px 10px; font-size:11px; height:28px;">#personal</button>
+              <button class="btn btn-secondary tag-toggle" onclick="toggleWebTag(this, '#subscription')" style="padding:4px 10px; font-size:11px; height:28px;">#subscription</button>
+              <button class="btn btn-secondary tag-toggle" onclick="toggleWebTag(this, '#groceries')" style="padding:4px 10px; font-size:11px; height:28px;">#groceries</button>
+              <button class="btn btn-secondary tag-toggle" onclick="toggleWebTag(this, '#online')" style="padding:4px 10px; font-size:11px; height:28px;">#online</button>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <button class="btn btn-secondary" onclick="saveAsTemplatePrompt()" style="font-size:12px;">
+              <span class="material-icons-round" style="font-size:16px;">bookmark_add</span>
+              <span>Save As Template</span>
+            </button>
+            <button class="btn btn-primary" onclick="recordWebTransaction()" style="font-size:12px; padding:8px 16px;">
+              <span class="material-icons-round" style="font-size:16px;">add_circle</span>
+              <span>Record Transaction</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Search & Filter Bar -->
         <div class="card" style="margin-bottom:20px;">
           <div style="display:flex; gap:12px;">
-            <input type="text" placeholder="Search merchant, tags, notes..." style="flex:1; padding:10px 14px; background:#0d1117; border:1px solid var(--card-border); border-radius:8px; color:white;">
+            <input type="text" placeholder="Search merchant, tags (#essential, #routine), notes..." style="flex:1; padding:10px 14px; background:#0d1117; border:1px solid var(--card-border); border-radius:8px; color:white;">
             <button class="btn btn-secondary"><span class="material-icons-round">filter_list</span> Filter</button>
             <button class="btn btn-secondary" onclick="alert('Exported full ledger as RFC-4180 CSV.')"><span class="material-icons-round">download</span> Export CSV</button>
           </div>

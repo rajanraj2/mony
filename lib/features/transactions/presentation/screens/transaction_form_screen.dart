@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 import '../../../../core/di/providers.dart';
 import '../../../../core/utils/calculator.dart';
+import '../../../budgets/presentation/providers/budget_providers.dart';
+import '../../../categories/domain/models/category.dart';
 import '../../domain/models/transaction.dart';
+import '../../domain/models/transaction_template.dart';
+import '../providers/template_providers.dart';
 import '../providers/transaction_providers.dart';
 
 class TransactionFormScreen extends ConsumerStatefulWidget {
@@ -28,9 +33,25 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   String? _selectedAccountId;
   String? _selectedTransferAccountId;
   String? _selectedCategoryId;
+  String? _selectedBudgetId;
   DateTime _selectedDate = DateTime.now();
   double? _calculatedAmount;
   bool _isLoading = false;
+
+  // Labels & Tags
+  final List<String> _selectedLabels = [];
+  final List<String> _availableLabels = [
+    '#essential',
+    '#discretionary',
+    '#work',
+    '#personal',
+    '#routine',
+    '#subscription',
+    '#groceries',
+    '#family',
+    '#cash',
+    '#online',
+  ];
 
   @override
   void initState() {
@@ -50,6 +71,12 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       _selectedCategoryId = init.categoryId;
       _selectedDate = init.date;
       _calculatedAmount = init.amount;
+      _selectedLabels.addAll(init.labels);
+      for (final l in init.labels) {
+        if (!_availableLabels.contains(l)) {
+          _availableLabels.add(l);
+        }
+      }
     }
 
     _amountController.addListener(_onAmountChanged);
@@ -69,6 +96,186 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     _personController.dispose();
     _placeController.dispose();
     super.dispose();
+  }
+
+  void _applyTemplate(TransactionTemplate tpl) {
+    setState(() {
+      _type = tpl.type;
+      if (tpl.amount != null) {
+        _amountController.text = tpl.amount!.toStringAsFixed(2);
+        _calculatedAmount = tpl.amount;
+      }
+      if (tpl.payeeName != null && tpl.payeeName!.isNotEmpty) {
+        _nameController.text = tpl.payeeName!;
+      }
+      if (tpl.categoryId != null) {
+        _selectedCategoryId = tpl.categoryId;
+      }
+      if (tpl.accountId != null) {
+        _selectedAccountId = tpl.accountId;
+      }
+      if (tpl.budgetId != null) {
+        _selectedBudgetId = tpl.budgetId;
+      }
+      if (tpl.description != null && tpl.description!.isNotEmpty) {
+        _descController.text = tpl.description!;
+      }
+      _selectedLabels.clear();
+      _selectedLabels.addAll(tpl.labels);
+      for (final l in tpl.labels) {
+        if (!_availableLabels.contains(l)) {
+          _availableLabels.add(l);
+        }
+      }
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 2),
+        backgroundColor: Color(tpl.color),
+        content: Row(
+          children: [
+            const Icon(Icons.flash_on, color: Colors.white, size: 18),
+            const SizedBox(width: 8),
+            Text('Auto-populated from template: ${tpl.name}'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _saveCurrentAsTemplate() async {
+    final nameCtrl = TextEditingController(text: _nameController.text.trim());
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Save as Reusable Template'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Save this transaction setup with its amount, category, and labels as a quick template.',
+              style: TextStyle(fontSize: 12, color: Colors.white70),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: nameCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Template Name',
+                hintText: 'e.g. Daily Metro, Starbucks, Zomato Dinner',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Save Template')),
+        ],
+      ),
+    );
+
+    if (result == true && nameCtrl.text.trim().isNotEmpty) {
+      final tpl = TransactionTemplate(
+        id: const Uuid().v4(),
+        name: nameCtrl.text.trim(),
+        icon: _type == TransactionType.income ? 'account_balance_wallet' : 'flash_on',
+        color: _type == TransactionType.income ? 0xFF2E7D32 : 0xFF2563EB,
+        type: _type,
+        amount: _calculatedAmount,
+        categoryId: _selectedCategoryId,
+        accountId: _selectedAccountId,
+        budgetId: _selectedBudgetId,
+        payeeName: _nameController.text.trim().isEmpty ? null : _nameController.text.trim(),
+        description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
+        labels: List<String>.from(_selectedLabels),
+        isPreset: false,
+        createdAt: DateTime.now(),
+      );
+
+      await ref.read(templateRepositoryProvider).createTemplate(tpl);
+      ref.invalidate(templateListProvider);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFF15803D),
+            content: Text('Template "${tpl.name}" saved successfully!'),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _showCreateCategoryDialog() async {
+    final nameCtrl = TextEditingController();
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Create New Category'),
+        content: TextField(
+          controller: nameCtrl,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Category Name',
+            hintText: 'e.g. Gym & Fitness, Pet Care, Books',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Create')),
+        ],
+      ),
+    );
+
+    if (result == true && nameCtrl.text.trim().isNotEmpty) {
+      final newCat = Category(
+        id: const Uuid().v4(),
+        name: nameCtrl.text.trim(),
+        type: _type == TransactionType.income ? CategoryType.income : CategoryType.expense,
+        color: 0xFF0284C7,
+        icon: 'label',
+        createdAt: DateTime.now(),
+      );
+
+      await ref.read(categoryRepositoryProvider).createCategory(newCat);
+      ref.invalidate(categoryListProvider);
+      setState(() => _selectedCategoryId = newCat.id);
+    }
+  }
+
+  Future<void> _showAddTagDialog() async {
+    final tagCtrl = TextEditingController();
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Add Custom Label / Tag'),
+        content: TextField(
+          controller: tagCtrl,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Label Name',
+            hintText: 'e.g. #trip2026, #taxFree, #shared',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Add')),
+        ],
+      ),
+    );
+
+    if (result == true && tagCtrl.text.trim().isNotEmpty) {
+      String tag = tagCtrl.text.trim();
+      if (!tag.startsWith('#')) tag = '#$tag';
+      setState(() {
+        if (!_availableLabels.contains(tag)) _availableLabels.add(tag);
+        if (!_selectedLabels.contains(tag)) _selectedLabels.add(tag);
+      });
+    }
   }
 
   Future<void> _submit() async {
@@ -103,6 +310,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
               place: _placeController.text.trim().isEmpty ? null : _placeController.text.trim(),
               date: _selectedDate,
               status: _status,
+              labels: _selectedLabels,
             );
       } else {
         // Update
@@ -118,15 +326,18 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
           place: _placeController.text.trim().isEmpty ? null : _placeController.text.trim(),
           date: _selectedDate,
           status: _status,
+          labels: _selectedLabels,
         );
         await ref.read(updateTransactionUseCaseProvider).execute(updated);
       }
 
-      if (mounted) Navigator.of(context).pop();
+      ref.invalidate(transactionListProvider);
+      ref.invalidate(accountListProvider);
+      if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          SnackBar(backgroundColor: Colors.redAccent, content: Text('Error: $e')),
         );
       }
     } finally {
@@ -138,6 +349,8 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   Widget build(BuildContext context) {
     final accounts = ref.watch(accountListProvider).value ?? [];
     final categories = ref.watch(categoryListProvider).value ?? [];
+    final budgets = ref.watch(budgetListProvider).value ?? [];
+    final templates = ref.watch(templateListProvider).value ?? [];
 
     // Fallback auto-select first account if not set
     if (_selectedAccountId == null && accounts.isNotEmpty) {
@@ -155,7 +368,13 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
         title: Text(widget.initialTransaction == null ? 'Add Transaction' : 'Edit Transaction'),
         actions: [
           IconButton(
+            onPressed: _saveCurrentAsTemplate,
+            tooltip: 'Save as Reusable Template',
+            icon: const Icon(Icons.bookmark_add_outlined),
+          ),
+          IconButton(
             onPressed: _isLoading ? null : _submit,
+            tooltip: 'Save Transaction',
             icon: const Icon(Icons.check),
           ),
         ],
@@ -165,7 +384,54 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // Transaction Type Segmented Button
+            // 1. TOP TEMPLATES CAROUSEL
+            if (templates.isNotEmpty) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Quick Templates',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white70),
+                  ),
+                  TextButton.icon(
+                    onPressed: _saveCurrentAsTemplate,
+                    style: TextButton.styleFrom(padding: EdgeInsets.zero, visualDensity: VisualDensity.compact),
+                    icon: const Icon(Icons.add, size: 14),
+                    label: const Text('Save Template', style: TextStyle(fontSize: 11)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: templates.map((tpl) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ActionChip(
+                        avatar: Icon(
+                          _getIconForTemplate(tpl.icon),
+                          size: 16,
+                          color: Color(tpl.color),
+                        ),
+                        label: Text(
+                          tpl.amount != null
+                              ? '${tpl.name} (₹${tpl.amount!.toStringAsFixed(0)})'
+                              : tpl.name,
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                        ),
+                        backgroundColor: const Color(0xFF1F242D),
+                        side: BorderSide(color: Color(tpl.color).withOpacity(0.4)),
+                        onPressed: () => _applyTemplate(tpl),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+              const SizedBox(height: 14),
+            ],
+
+            // 2. Transaction Type Segmented Button
             SegmentedButton<TransactionType>(
               segments: const [
                 ButtonSegment(value: TransactionType.expense, label: Text('Expense'), icon: Icon(Icons.arrow_upward)),
@@ -180,7 +446,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Amount field with live calculator display
+            // 3. Amount Field
             TextFormField(
               controller: _amountController,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -197,7 +463,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Name / Merchant field with autocomplete
+            // 4. Payee / Merchant Field
             Consumer(
               builder: (context, ref, _) {
                 final suggestions = ref.watch(frequentNamesProvider).value ?? [];
@@ -226,9 +492,189 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                 );
               },
             ),
+            const SizedBox(height: 14),
+
+            // 5. CATEGORY SELECTION JUST BELOW INPUT FIELDS
+            if (_type != TransactionType.transfer) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Category / Spend Type',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white70),
+                  ),
+                  TextButton.icon(
+                    onPressed: _showCreateCategoryDialog,
+                    style: TextButton.styleFrom(padding: EdgeInsets.zero, visualDensity: VisualDensity.compact),
+                    icon: const Icon(Icons.add_circle_outline, size: 14),
+                    label: const Text('Add Category', style: TextStyle(fontSize: 11)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    ...filteredCategories.map((c) {
+                      final isSelected = _selectedCategoryId == c.id;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: FilterChip(
+                          selected: isSelected,
+                          avatar: Icon(
+                            _getIconForCategory(c.icon),
+                            size: 16,
+                            color: isSelected ? Colors.white : Color(c.color),
+                          ),
+                          label: Text(
+                            c.name,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              color: isSelected ? Colors.white : Colors.white70,
+                            ),
+                          ),
+                          selectedColor: Color(c.color),
+                          backgroundColor: const Color(0xFF1E242E),
+                          checkmarkColor: Colors.white,
+                          onSelected: (val) {
+                            setState(() => _selectedCategoryId = val ? c.id : null);
+                          },
+                        ),
+                      );
+                    }),
+                    ActionChip(
+                      avatar: const Icon(Icons.add, size: 16, color: Color(0xFF60A5FA)),
+                      label: const Text('New Category', style: TextStyle(fontSize: 12, color: Color(0xFF60A5FA))),
+                      backgroundColor: const Color(0xFF1E242E),
+                      onPressed: _showCreateCategoryDialog,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+            ],
+
+            // 6. LINKED BUDGET SELECTION (FOR EXPENSES)
+            if (_type == TransactionType.expense && budgets.isNotEmpty) ...[
+              const Text(
+                'Linked Budget',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white70),
+              ),
+              const SizedBox(height: 6),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    FilterChip(
+                      selected: _selectedBudgetId == null,
+                      label: const Text('No Specific Budget', style: TextStyle(fontSize: 12)),
+                      selectedColor: const Color(0xFF2563EB),
+                      backgroundColor: const Color(0xFF1E242E),
+                      onSelected: (_) => setState(() => _selectedBudgetId = null),
+                    ),
+                    const SizedBox(width: 6),
+                    ...budgets.map((b) {
+                      final isSelected = _selectedBudgetId == b.id;
+                      final cat = categories.where((c) => c.id == b.categoryId).firstOrNull;
+                      final label = cat != null
+                          ? '${cat.name} Budget (₹${b.amount.toStringAsFixed(0)})'
+                          : 'Budget ₹${b.amount.toStringAsFixed(0)}';
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: FilterChip(
+                          selected: isSelected,
+                          avatar: const Icon(Icons.pie_chart, size: 14, color: Color(0xFF38BDF8)),
+                          label: Text(
+                            label,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              color: isSelected ? Colors.white : Colors.white70,
+                            ),
+                          ),
+                          selectedColor: const Color(0xFF0284C7),
+                          backgroundColor: const Color(0xFF1E242E),
+                          onSelected: (val) {
+                            setState(() {
+                              _selectedBudgetId = val ? b.id : null;
+                              if (val && _selectedCategoryId == null) {
+                                _selectedCategoryId = b.categoryId;
+                              }
+                            });
+                          },
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+            ],
+
+            // 7. LABELS & TAGS MULTI-SELECT CHIPS
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Labels & Tags',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white70),
+                ),
+                TextButton.icon(
+                  onPressed: _showAddTagDialog,
+                  style: TextButton.styleFrom(padding: EdgeInsets.zero, visualDensity: VisualDensity.compact),
+                  icon: const Icon(Icons.tag, size: 14),
+                  label: const Text('Add Tag', style: TextStyle(fontSize: 11)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  ..._availableLabels.map((lbl) {
+                    final isSelected = _selectedLabels.contains(lbl);
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: FilterChip(
+                        selected: isSelected,
+                        label: Text(
+                          lbl,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            color: isSelected ? Colors.white : Colors.white70,
+                          ),
+                        ),
+                        selectedColor: const Color(0xFF8B5CF6),
+                        backgroundColor: const Color(0xFF1E242E),
+                        checkmarkColor: Colors.white,
+                        onSelected: (val) {
+                          setState(() {
+                            if (val) {
+                              _selectedLabels.add(lbl);
+                            } else {
+                              _selectedLabels.remove(lbl);
+                            }
+                          });
+                        },
+                      ),
+                    );
+                  }),
+                  ActionChip(
+                    avatar: const Icon(Icons.add, size: 14, color: Color(0xFFA78BFA)),
+                    label: const Text('New Tag', style: TextStyle(fontSize: 12, color: Color(0xFFA78BFA))),
+                    backgroundColor: const Color(0xFF1E242E),
+                    onPressed: _showAddTagDialog,
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 16),
 
-            // Account selection dropdown
+            // 8. Account Selection Dropdown
             DropdownButtonFormField<String>(
               value: _selectedAccountId,
               decoration: const InputDecoration(
@@ -262,23 +708,6 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
               const SizedBox(height: 16),
             ],
 
-            // Category selection dropdown (for expense/income)
-            if (_type != TransactionType.transfer) ...[
-              DropdownButtonFormField<String>(
-                value: _selectedCategoryId,
-                decoration: const InputDecoration(
-                  labelText: 'Category',
-                  prefixIcon: Icon(Icons.category),
-                  border: OutlineInputBorder(),
-                ),
-                items: filteredCategories.map((c) {
-                  return DropdownMenuItem(value: c.id, child: Text(c.name));
-                }).toList(),
-                onChanged: (v) => setState(() => _selectedCategoryId = v),
-              ),
-              const SizedBox(height: 16),
-            ],
-
             // Date picker
             ListTile(
               contentPadding: EdgeInsets.zero,
@@ -298,7 +727,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
             ),
             const Divider(),
 
-            // Pending / Cleared status toggle (checkbook mode)
+            // Pending / Cleared status toggle
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: const Text('Status: Cleared'),
@@ -353,5 +782,55 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
         ),
       ),
     );
+  }
+
+  IconData _getIconForTemplate(String icon) {
+    switch (icon) {
+      case 'local_cafe':
+        return Icons.local_cafe;
+      case 'directions_subway':
+        return Icons.directions_subway;
+      case 'shopping_cart':
+        return Icons.shopping_cart;
+      case 'movie':
+        return Icons.movie;
+      case 'bolt':
+        return Icons.bolt;
+      case 'home':
+        return Icons.home;
+      case 'trending_up':
+        return Icons.trending_up;
+      case 'account_balance_wallet':
+        return Icons.account_balance_wallet;
+      default:
+        return Icons.flash_on;
+    }
+  }
+
+  IconData _getIconForCategory(String icon) {
+    switch (icon) {
+      case 'restaurant':
+        return Icons.restaurant;
+      case 'directions_car':
+        return Icons.directions_car;
+      case 'home':
+        return Icons.home;
+      case 'local_hospital':
+        return Icons.local_hospital;
+      case 'movie':
+        return Icons.movie;
+      case 'shopping_bag':
+        return Icons.shopping_bag;
+      case 'receipt':
+        return Icons.receipt;
+      case 'account_balance_wallet':
+        return Icons.account_balance_wallet;
+      case 'trending_up':
+        return Icons.trending_up;
+      case 'work':
+        return Icons.work;
+      default:
+        return Icons.category;
+    }
   }
 }

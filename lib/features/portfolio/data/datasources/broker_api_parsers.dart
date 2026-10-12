@@ -26,7 +26,7 @@ class KiteConnectParser {
       final displayName = _formatKiteName(symbol);
 
       list.add(BrokerHolding.calculate(
-        id: 'kite_${exchange}_${symbol}',
+        id: 'kite_${exchange}_$symbol',
         brokerType: BrokerType.zerodha,
         symbol: symbol,
         name: displayName,
@@ -228,7 +228,7 @@ class GrowwParser {
           : AssetType.stock;
 
       list.add(BrokerHolding.calculate(
-        id: 'groww_stock_${symbol}',
+        id: 'groww_stock_$symbol',
         brokerType: BrokerType.groww,
         symbol: symbol,
         name: name,
