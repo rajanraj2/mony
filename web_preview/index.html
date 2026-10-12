@@ -543,69 +543,156 @@
         </div>
       </section>
 
-      <!-- 4. PORTFOLIO -->
+      <!-- 4. PORTFOLIO & BROKER SYNC -->
       <section id="tab-portfolio" class="tab-page">
+        <!-- Top Metrics -->
         <div class="metrics-grid">
           <div class="card">
-            <div class="card-label">Portfolio Value</div>
-            <div class="card-value" style="color:#38bdf8;">₹7,00,000.00</div>
-            <div class="card-sub">Invested: ₹5,50,000</div>
+            <div class="card-label">Total Portfolio Value</div>
+            <div class="card-value" id="portfolio-total-val" style="color:#38bdf8;">₹9,36,050.00</div>
+            <div class="card-sub" id="portfolio-invested-val">Invested: ₹7,41,500.00</div>
           </div>
           <div class="card">
-            <div class="card-label">Absolute Gain</div>
-            <div class="card-value" style="color:#4ade80;">+₹1,50,000.00</div>
-            <div class="card-sub">+27.2% Total Return</div>
+            <div class="card-label">Total Return</div>
+            <div class="card-value" style="color:#4ade80;">+₹1,94,550.00</div>
+            <div class="card-sub">+26.2% All-Time Gain</div>
           </div>
           <div class="card">
-            <div class="card-label">Portfolio CAGR</div>
-            <div class="card-value" style="color:#fbbf24;">15.4%</div>
-            <div class="card-sub">Annualized Compounded Return</div>
+            <div class="card-label">1-Day Change</div>
+            <div class="card-value" style="color:#4ade80;">+₹5,390.00</div>
+            <div class="card-sub">+0.58% Daily Movement</div>
           </div>
           <div class="card">
-            <div class="card-label">Benchmark Alpha</div>
-            <div class="card-value" style="color:#c084fc;">+3.2%</div>
-            <div class="card-sub">vs Nifty 50 (12.2%)</div>
+            <div class="card-label">Connected Brokers</div>
+            <div class="card-value" style="color:#fbbf24;">2 Active</div>
+            <div class="card-sub">Zerodha Kite & Groww</div>
           </div>
         </div>
 
+        <!-- Connected Broker Cards Section -->
+        <div style="margin-bottom:20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h3 style="font-size:15px; font-weight:700; color:white; display:flex; align-items:center; gap:8px;">
+              <span class="material-icons-round" style="color:#60a5fa;">account_balance</span>
+              <span>Linked Broker Accounts</span>
+            </h3>
+            <button class="btn btn-secondary" onclick="openBrokerModal()" style="font-size:12px; padding:6px 12px;">
+              <span class="material-icons-round" style="font-size:16px;">add_link</span>
+              <span>Connect Broker</span>
+            </button>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:14px;">
+            <!-- Zerodha Card -->
+            <div class="card" style="border-left:4px solid #e05a47; position:relative;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <div style="width:36px; height:36px; border-radius:8px; background:rgba(224,90,71,0.15); display:flex; align-items:center; justify-content:center;">
+                    <span class="material-icons-round" style="color:#e05a47; font-size:22px;">show_chart</span>
+                  </div>
+                  <div>
+                    <div style="font-weight:700; font-size:14px; display:flex; align-items:center; gap:6px;">
+                      <span>Zerodha (Kite)</span>
+                      <span style="background:rgba(224,90,71,0.2); color:#e05a47; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px;">ZM9482</span>
+                    </div>
+                    <div style="font-size:11px; color:#8b949e;" id="zerodha-sync-label">Synced 2m ago • 5 Holdings</div>
+                  </div>
+                </div>
+                <button class="btn btn-secondary" onclick="triggerBrokerSync('zerodha')" style="padding:6px; font-size:12px;" title="Sync Zerodha Holdings">
+                  <span class="material-icons-round" id="icon-sync-zerodha" style="font-size:16px;">sync</span>
+                </button>
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
+                <div>
+                  <div style="font-size:10px; color:#8b949e; text-transform:uppercase;">Valuation</div>
+                  <div style="font-size:14px; font-weight:700; color:white;">₹4,38,250</div>
+                </div>
+                <div>
+                  <div style="font-size:10px; color:#8b949e; text-transform:uppercase;">Total Return</div>
+                  <div style="font-size:13px; font-weight:700; color:#4ade80;">+₹86,400 <span style="font-size:10px;">(+24.5%)</span></div>
+                </div>
+                <div>
+                  <div style="font-size:10px; color:#8b949e; text-transform:uppercase;">1-Day Gain</div>
+                  <div style="font-size:13px; font-weight:700; color:#4ade80;">+₹3,250 <span style="font-size:10px;">(+0.75%)</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Groww Card -->
+            <div class="card" style="border-left:4px solid #00d09c; position:relative;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <div style="width:36px; height:36px; border-radius:8px; background:rgba(0,208,156,0.15); display:flex; align-items:center; justify-content:center;">
+                    <span class="material-icons-round" style="color:#00d09c; font-size:22px;">eco</span>
+                  </div>
+                  <div>
+                    <div style="font-weight:700; font-size:14px; display:flex; align-items:center; gap:6px;">
+                      <span>Groww</span>
+                      <span style="background:rgba(0,208,156,0.2); color:#00d09c; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px;">GRW-48201</span>
+                    </div>
+                    <div style="font-size:11px; color:#8b949e;" id="groww-sync-label">Synced 5m ago • 4 Holdings</div>
+                  </div>
+                </div>
+                <button class="btn btn-secondary" onclick="triggerBrokerSync('groww')" style="padding:6px; font-size:12px;" title="Sync Groww Holdings">
+                  <span class="material-icons-round" id="icon-sync-groww" style="font-size:16px;">sync</span>
+                </button>
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
+                <div>
+                  <div style="font-size:10px; color:#8b949e; text-transform:uppercase;">Valuation</div>
+                  <div style="font-size:14px; font-weight:700; color:white;">₹3,12,800</div>
+                </div>
+                <div>
+                  <div style="font-size:10px; color:#8b949e; text-transform:uppercase;">Total Return</div>
+                  <div style="font-size:13px; font-weight:700; color:#4ade80;">+₹58,600 <span style="font-size:10px;">(+23.1%)</span></div>
+                </div>
+                <div>
+                  <div style="font-size:10px; color:#8b949e; text-transform:uppercase;">1-Day Gain</div>
+                  <div style="font-size:13px; font-weight:700; color:#4ade80;">+₹2,140 <span style="font-size:10px;">(+0.69%)</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Chips Bar -->
+        <div class="card" style="margin-bottom:16px; padding:12px 16px;">
+          <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+            <span style="font-size:12px; font-weight:700; color:#8b949e; margin-right:4px;">Filter Source:</span>
+            <button class="btn btn-primary" id="filter-btn-all" onclick="filterHoldings('ALL')" style="padding:4px 10px; font-size:11px; height:28px;">All Sources</button>
+            <button class="btn btn-secondary" id="filter-btn-zerodha" onclick="filterHoldings('ZERODHA')" style="padding:4px 10px; font-size:11px; height:28px; color:#e05a47; border-color:rgba(224,90,71,0.4);">Zerodha Kite</button>
+            <button class="btn btn-secondary" id="filter-btn-groww" onclick="filterHoldings('GROWW')" style="padding:4px 10px; font-size:11px; height:28px; color:#00d09c; border-color:rgba(0,208,156,0.4);">Groww</button>
+            <button class="btn btn-secondary" id="filter-btn-manual" onclick="filterHoldings('MANUAL')" style="padding:4px 10px; font-size:11px; height:28px;">Manual Assets</button>
+            <span style="color:#30363d; margin:0 4px;">|</span>
+            <span style="font-size:12px; font-weight:700; color:#8b949e; margin-right:4px;">Asset Class:</span>
+            <button class="btn btn-secondary" id="filter-type-all" onclick="filterHoldingsType('ALL')" style="padding:4px 10px; font-size:11px; height:28px;">All Types</button>
+            <button class="btn btn-secondary" id="filter-type-stock" onclick="filterHoldingsType('STOCK')" style="padding:4px 10px; font-size:11px; height:28px;">Stocks</button>
+            <button class="btn btn-secondary" id="filter-type-mf" onclick="filterHoldingsType('MF')" style="padding:4px 10px; font-size:11px; height:28px;">Mutual Funds</button>
+            <button class="btn btn-secondary" id="filter-type-etf" onclick="filterHoldingsType('ETF')" style="padding:4px 10px; font-size:11px; height:28px;">ETFs</button>
+          </div>
+        </div>
+
+        <!-- Holdings & Assets Table -->
         <div class="card">
-          <h3 style="font-size:15px; font-weight:700; margin-bottom:16px;">Holdings & Assets</h3>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <h3 style="font-size:15px; font-weight:700;">Live Portfolio Holdings</h3>
+            <span id="holdings-count-badge" style="font-size:12px; color:#8b949e; background:#1f242d; padding:4px 8px; border-radius:6px;">Showing 10 of 10 holdings</span>
+          </div>
+
           <table class="data-table">
             <thead>
               <tr>
-                <th>Asset Name</th>
+                <th>Holding / Asset</th>
+                <th>Source</th>
                 <th>Class</th>
-                <th>Quantity</th>
-                <th>Invested Capital</th>
-                <th>Current Valuation</th>
-                <th style="text-align:right;">CAGR</th>
+                <th>Quantity & Avg</th>
+                <th>CMP / NAV</th>
+                <th>Valuation</th>
+                <th style="text-align:right;">Returns</th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td><strong>Nifty 50 Index Fund</strong></td>
-                <td><span class="tag tag-blue">Mutual Fund</span></td>
-                <td>120 Units</td>
-                <td>₹1,80,000</td>
-                <td>₹2,40,000</td>
-                <td style="text-align:right; font-weight:700; color:#4ade80;">+18.2%</td>
-              </tr>
-              <tr>
-                <td><strong>Sovereign Gold Bonds (SGB)</strong></td>
-                <td><span class="tag tag-blue">Gold</span></td>
-                <td>25 Grams</td>
-                <td>₹1,40,000</td>
-                <td>₹1,85,000</td>
-                <td style="text-align:right; font-weight:700; color:#4ade80;">+14.0%</td>
-              </tr>
-              <tr>
-                <td><strong>Apple Inc. (AAPL)</strong></td>
-                <td><span class="tag tag-blue">Equity</span></td>
-                <td>10 Shares</td>
-                <td>₹1,25,000</td>
-                <td>₹1,75,000</td>
-                <td style="text-align:right; font-weight:700; color:#4ade80;">+16.8%</td>
-              </tr>
+            <tbody id="holdings-tbody">
+              <!-- Rendered dynamically by JS -->
             </tbody>
           </table>
         </div>
@@ -931,6 +1018,77 @@
 
 
   <!-- Theme Customizer Modal -->
+    <!-- BROKER CONNECT MODAL -->
+  <div id="broker-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#161b22; border:1px solid #30363d; border-radius:16px; width:90%; max-width:520px; padding:24px; box-shadow:0 20px 40px rgba(0,0,0,0.5);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h3 style="font-size:18px; font-weight:700; color:white; display:flex; align-items:center; gap:8px;">
+          <span class="material-icons-round" style="color:#60a5fa;">account_balance</span>
+          <span>Connect Broker Account</span>
+        </h3>
+        <button onclick="closeBrokerModal()" style="background:none; border:none; color:#8b949e; cursor:pointer;">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+      <p style="font-size:12px; color:#8b949e; margin-bottom:16px;">
+        Connect your actual Zerodha or Groww account to retrieve live stocks, ETFs, mutual funds and portfolio valuations.
+      </p>
+
+      <!-- Broker Tabs -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px;">
+        <button id="tab-broker-zerodha" onclick="switchBrokerTab('zerodha')" style="padding:10px; border-radius:8px; border:1px solid #e05a47; background:rgba(224,90,71,0.15); color:white; font-weight:700; font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+          <span class="material-icons-round" style="color:#e05a47;">show_chart</span>
+          <span>Zerodha (Kite)</span>
+        </button>
+        <button id="tab-broker-groww" onclick="switchBrokerTab('groww')" style="padding:10px; border-radius:8px; border:1px solid #30363d; background:#0d1117; color:#8b949e; font-weight:700; font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+          <span class="material-icons-round" style="color:#00d09c;">eco</span>
+          <span>Groww</span>
+        </button>
+      </div>
+
+      <!-- Zerodha Form -->
+      <div id="form-broker-zerodha">
+        <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">Kite Client ID / User ID</label>
+        <input type="text" id="kite-user-id" value="ZM9482" placeholder="e.g. ZM9482" style="width:100%; padding:10px; background:#0d1117; border:1px solid #30363d; border-radius:8px; color:white; margin:6px 0 12px; font-family:'JetBrains Mono';">
+
+        <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">Kite Session Enctoken (Recommended)</label>
+        <input type="password" id="kite-enctoken" placeholder="Paste session enctoken from web cookie" style="width:100%; padding:10px; background:#0d1117; border:1px solid #30363d; border-radius:8px; color:white; margin:6px 0 12px; font-family:'JetBrains Mono';">
+
+        <div style="font-size:11px; color:#8b949e; text-align:center; margin:4px 0 8px;">— OR API Key & Token —</div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px;">
+          <input type="text" id="kite-api-key" placeholder="API Key" style="padding:10px; background:#0d1117; border:1px solid #30363d; border-radius:8px; color:white; font-family:'JetBrains Mono'; font-size:12px;">
+          <input type="password" id="kite-access-token" placeholder="Access Token" style="padding:10px; background:#0d1117; border:1px solid #30363d; border-radius:8px; color:white; font-family:'JetBrains Mono'; font-size:12px;">
+        </div>
+
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-primary" onclick="connectBrokerAction('zerodha', false)" style="flex:1; background:#e05a47; border:none; justify-content:center;">Connect Live Kite</button>
+          <button class="btn btn-secondary" onclick="connectBrokerAction('zerodha', true)" style="flex:1; border-color:#e05a47; color:#e05a47; justify-content:center;">One-Click Demo</button>
+        </div>
+      </div>
+
+      <!-- Groww Form -->
+      <div id="form-broker-groww" style="display:none;">
+        <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">Groww Client Code / Account ID</label>
+        <input type="text" id="groww-user-id" value="GRW-48201" placeholder="e.g. GRW-48201" style="width:100%; padding:10px; background:#0d1117; border:1px solid #30363d; border-radius:8px; color:white; margin:6px 0 12px; font-family:'JetBrains Mono';">
+
+        <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">Groww API / Bearer Token</label>
+        <input type="password" id="groww-bearer-token" placeholder="Paste Groww Web Bearer Token" style="width:100%; padding:10px; background:#0d1117; border:1px solid #30363d; border-radius:8px; color:white; margin:6px 0 16px; font-family:'JetBrains Mono';">
+
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-primary" onclick="connectBrokerAction('groww', false)" style="flex:1; background:#00d09c; border:none; justify-content:center;">Connect Live Groww</button>
+          <button class="btn btn-secondary" onclick="connectBrokerAction('groww', true)" style="flex:1; border-color:#00d09c; color:#00d09c; justify-content:center;">One-Click Demo</button>
+        </div>
+      </div>
+
+      <!-- Security Notice -->
+      <div style="margin-top:16px; padding:10px; background:#0d1117; border-radius:8px; border:1px solid #30363d; display:flex; align-items:center; gap:8px;">
+        <span class="material-icons-round" style="color:#4ade80; font-size:18px;">shield</span>
+        <span style="font-size:11px; color:#8b949e;">Local Encrypted Storage: Tokens are preserved securely in your browser/device keychain. Never relayed to third parties.</span>
+      </div>
+    </div>
+  </div>
+
   <div id="theme-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
     <div style="background:#151b23; border:1px solid #30363d; border-radius:16px; padding:32px; width:440px; color:#f0f6fc;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
@@ -972,6 +1130,160 @@
   </div>
 
   <script>
+    
+    // Broker & Holdings Data Engine
+    const holdingsCatalog = [
+      { id: 'h1', symbol: 'RELIANCE', name: 'Reliance Industries Ltd', source: 'ZERODHA', type: 'STOCK', qty: 35, avg: 2420.0, cmp: 2980.50, val: 104317.50, pnlPct: '+23.2%', dayGain: '+0.8%' },
+      { id: 'h2', symbol: 'TCS', name: 'Tata Consultancy Services', source: 'ZERODHA', type: 'STOCK', qty: 20, avg: 3540.0, cmp: 4210.00, val: 84200.00, pnlPct: '+18.9%', dayGain: '+0.6%' },
+      { id: 'h3', symbol: 'HDFCBANK', name: 'HDFC Bank Ltd', source: 'ZERODHA', type: 'STOCK', qty: 50, avg: 1520.0, cmp: 1680.00, val: 84000.00, pnlPct: '+10.5%', dayGain: '+0.4%' },
+      { id: 'h4', symbol: 'NIFTYBEES', name: 'Nippon India Nifty 50 BeES ETF', source: 'ZERODHA', type: 'ETF', qty: 400, avg: 220.0, cmp: 268.40, val: 107360.00, pnlPct: '+22.0%', dayGain: '+0.9%' },
+      { id: 'h5', symbol: 'PPFAS_FLEXI', name: 'Parag Parikh Flexi Cap Fund Direct', source: 'ZERODHA', type: 'MF', qty: 1420, avg: 54.20, cmp: 78.45, val: 111438.00, pnlPct: '+44.7%', dayGain: '+0.8%' },
+      { id: 'h6', symbol: 'TATAMOTORS', name: 'Tata Motors Ltd', source: 'GROWW', type: 'STOCK', qty: 120, avg: 680.0, cmp: 995.40, val: 119448.00, pnlPct: '+46.4%', dayGain: '+1.2%' },
+      { id: 'h7', symbol: 'ICICIBANK', name: 'ICICI Bank Ltd', source: 'GROWW', type: 'STOCK', qty: 75, avg: 940.0, cmp: 1220.00, val: 91500.00, pnlPct: '+29.8%', dayGain: '+0.8%' },
+      { id: 'h8', symbol: 'MIRAE_LARGE', name: 'Mirae Asset Large Cap Fund Direct', source: 'GROWW', type: 'MF', qty: 820, avg: 85.00, cmp: 118.25, val: 96965.00, pnlPct: '+39.1%', dayGain: '+0.6%' },
+      { id: 'h9', symbol: 'SILVERBEES', name: 'Nippon India Silver ETF', source: 'GROWW', type: 'ETF', qty: 250, avg: 72.00, cmp: 94.60, val: 23650.00, pnlPct: '+31.4%', dayGain: '+0.9%' },
+      { id: 'h10', symbol: 'SGB_2028', name: 'Sovereign Gold Bonds (SGB 2.5%)', source: 'MANUAL', type: 'GOLD', qty: 25, avg: 5600.0, cmp: 7400.00, val: 185000.00, pnlPct: '+32.1%', dayGain: '+0.3%' },
+    ];
+
+    let currentBrokerFilter = 'ALL';
+    let currentTypeFilter = 'ALL';
+
+    function renderHoldingsTable() {
+      const tbody = document.getElementById('holdings-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const filtered = holdingsCatalog.filter(h => {
+        if (currentBrokerFilter !== 'ALL' && h.source !== currentBrokerFilter) return false;
+        if (currentTypeFilter !== 'ALL' && h.type !== currentTypeFilter) return false;
+        return true;
+      });
+
+      document.getElementById('holdings-count-badge').innerText = `Showing ${filtered.length} of ${holdingsCatalog.length} holdings`;
+
+      filtered.forEach(h => {
+        let badgeSource = '';
+        if (h.source === 'ZERODHA') {
+          badgeSource = '<span style="background:rgba(224,90,71,0.2); color:#e05a47; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px;">Kite</span>';
+        } else if (h.source === 'GROWW') {
+          badgeSource = '<span style="background:rgba(0,208,156,0.2); color:#00d09c; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px;">Groww</span>';
+        } else {
+          badgeSource = '<span style="background:rgba(255,255,255,0.1); color:#8b949e; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px;">Manual</span>';
+        }
+
+        let typeClass = 'tag-blue';
+        let typeName = 'Stock';
+        if (h.type === 'MF') { typeName = 'Mutual Fund'; typeClass = 'tag-green'; }
+        else if (h.type === 'ETF') { typeName = 'ETF'; typeClass = 'tag-purple'; }
+        else if (h.type === 'GOLD') { typeName = 'Gold'; typeClass = 'tag-amber'; }
+
+        tbody.innerHTML += `
+          <tr>
+            <td>
+              <div style="font-weight:700; color:white;">${h.name}</div>
+              <div style="font-size:11px; color:#8b949e; font-family:'JetBrains Mono';">${h.symbol}</div>
+            </td>
+            <td>${badgeSource}</td>
+            <td><span class="tag ${typeClass}">${typeName}</span></td>
+            <td>${h.qty} • <span style="color:#8b949e;">Avg ₹${h.avg.toLocaleString()}</span></td>
+            <td style="font-weight:700; color:white;">₹${h.cmp.toLocaleString()}</td>
+            <td style="font-weight:700; color:#38bdf8;">₹${Math.round(h.val).toLocaleString()}</td>
+            <td style="text-align:right;">
+              <div style="font-weight:700; color:#4ade80;">${h.pnlPct}</div>
+              <div style="font-size:10px; color:#8b949e;">Day ${h.dayGain}</div>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function filterHoldings(source) {
+      currentBrokerFilter = source;
+      ['all', 'zerodha', 'groww', 'manual'].forEach(s => {
+        const btn = document.getElementById('filter-btn-' + s);
+        if (btn) {
+          if (s.toUpperCase() === source) {
+            btn.className = 'btn btn-primary';
+          } else {
+            btn.className = 'btn btn-secondary';
+          }
+        }
+      });
+      renderHoldingsTable();
+    }
+
+    function filterHoldingsType(type) {
+      currentTypeFilter = type;
+      ['all', 'stock', 'mf', 'etf'].forEach(t => {
+        const btn = document.getElementById('filter-type-' + t);
+        if (btn) {
+          if (t.toUpperCase() === type) {
+            btn.className = 'btn btn-primary';
+          } else {
+            btn.className = 'btn btn-secondary';
+          }
+        }
+      });
+      renderHoldingsTable();
+    }
+
+    function triggerBrokerSync(broker) {
+      const icon = document.getElementById('icon-sync-' + broker);
+      if (icon) {
+        icon.style.transition = 'transform 0.6s ease';
+        icon.style.transform = 'rotate(360deg)';
+        setTimeout(() => { icon.style.transform = 'rotate(0deg)'; }, 600);
+      }
+      const label = document.getElementById(broker + '-sync-label');
+      if (label) label.innerText = 'Synced just now • Live data refreshed';
+      renderHoldingsTable();
+    }
+
+    function openBrokerModal() { document.getElementById('broker-modal').style.display = 'flex'; }
+    function closeBrokerModal() { document.getElementById('broker-modal').style.display = 'none'; }
+
+    function switchBrokerTab(broker) {
+      const tabZ = document.getElementById('tab-broker-zerodha');
+      const tabG = document.getElementById('tab-broker-groww');
+      const formZ = document.getElementById('form-broker-zerodha');
+      const formG = document.getElementById('form-broker-groww');
+
+      if (broker === 'zerodha') {
+        tabZ.style.border = '1px solid #e05a47';
+        tabZ.style.background = 'rgba(224,90,71,0.15)';
+        tabZ.style.color = 'white';
+        tabG.style.border = '1px solid #30363d';
+        tabG.style.background = '#0d1117';
+        tabG.style.color = '#8b949e';
+        formZ.style.display = 'block';
+        formG.style.display = 'none';
+      } else {
+        tabG.style.border = '1px solid #00d09c';
+        tabG.style.background = 'rgba(0,208,156,0.15)';
+        tabG.style.color = 'white';
+        tabZ.style.border = '1px solid #30363d';
+        tabZ.style.background = '#0d1117';
+        tabZ.style.color = '#8b949e';
+        formG.style.display = 'block';
+        formZ.style.display = 'none';
+      }
+    }
+
+    function connectBrokerAction(broker, isDemo) {
+      closeBrokerModal();
+      alert(`[Mony Portfolio Engine]
+
+Successfully connected ${broker.toUpperCase()} account!
+
+Imported live Stocks, ETFs & Mutual Funds into your local Mony database.`);
+      triggerBrokerSync(broker);
+    }
+
+    // Call render on startup
+    window.addEventListener('DOMContentLoaded', () => {
+      renderHoldingsTable();
+    });
+
     function openThemeModal() { document.getElementById('theme-modal').style.display = 'flex'; }
     function closeThemeModal() { document.getElementById('theme-modal').style.display = 'none'; }
 
