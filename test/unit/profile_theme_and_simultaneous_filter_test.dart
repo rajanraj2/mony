@@ -5,8 +5,11 @@ import 'package:mony/features/settings/domain/models/app_theme_config.dart';
 import 'package:mony/features/settings/presentation/providers/home_tiles_provider.dart';
 import 'package:mony/features/transactions/domain/models/transaction.dart';
 
+import 'package:google_fonts/google_fonts.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  GoogleFonts.config.allowRuntimeFetching = false;
   group('Home Screen Quick Tiles Settings Tests', () {
     test('HomeTilesNotifier starts with all 4 tiles enabled and allows granular toggling', () {
       final notifier = HomeTilesNotifier();

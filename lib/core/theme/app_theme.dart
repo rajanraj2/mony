@@ -39,7 +39,8 @@ class AppTheme {
           side: const BorderSide(color: Color(0xFFE7E5E4)),
         ),
       ),
-      textTheme: GoogleFonts.interTextTheme(),
+      // textTheme using clean Material default typography
+
     );
   }
 
@@ -84,7 +85,8 @@ class AppTheme {
           fontWeight: FontWeight.bold,
         ),
       ),
-      textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
+      // textTheme using clean Material default typography
+
     );
   }
 }
