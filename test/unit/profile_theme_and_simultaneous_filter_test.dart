@@ -6,6 +6,7 @@ import 'package:mony/features/settings/presentation/providers/home_tiles_provide
 import 'package:mony/features/transactions/domain/models/transaction.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group('Home Screen Quick Tiles Settings Tests', () {
     test('HomeTilesNotifier starts with all 4 tiles enabled and allows granular toggling', () {
       final notifier = HomeTilesNotifier();
@@ -121,7 +122,7 @@ void main() {
       }).toList();
 
       expect(filtered.length, equals(1));
-      expect(filtered.first.id, equals('t1'));
+      expect(filtered.first.id, equals('1'));
       expect(filtered.first.name, equals('Groceries'));
     });
   });
