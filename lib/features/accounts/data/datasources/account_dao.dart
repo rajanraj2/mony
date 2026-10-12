@@ -9,16 +9,13 @@ class AccountDao extends DatabaseAccessor<AppDatabase> with _$AccountDaoMixin {
   AccountDao(super.db);
 
   Stream<List<domain.Account>> watchAccounts() {
+    // Join transactionsTable so Drift automatically notifies stream whenever any transaction is inserted, edited, or deleted!
     return (select(accountsTable)..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
+        .join([
+          leftOuterJoin(transactionsTable, transactionsTable.accountId.equalsExp(accountsTable.id))
+        ])
         .watch()
-        .asyncMap((rows) async {
-      final accounts = <domain.Account>[];
-      for (final r in rows) {
-        final balance = await getCalculatedBalance(r.id, r.openingBalance);
-        accounts.add(_mapToDomain(r, balance));
-      }
-      return accounts;
-    });
+        .asyncMap((_) => getAllAccounts());
   }
 
   Future<List<domain.Account>> getAllAccounts() async {

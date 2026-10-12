@@ -151,6 +151,8 @@ jobs:
       - name: Generate Android Project Scaffold
         run: |
           flutter create . --org com.monyapp --project-name mony --platforms android
+          # Copy official Mony brand launcher icons
+          cp -r assets/icon/* android/app/src/main/res/
           # Modern Flutter creates android/app/build.gradle.kts
           if [ -f android/app/build.gradle.kts ]; then
             sed -i 's/compileSdk = .*/compileSdk = 36/g' android/app/build.gradle.kts

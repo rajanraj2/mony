@@ -1,3 +1,5 @@
+import '../../../auth/presentation/screens/profile_screen.dart';
+import '../../../settings/presentation/providers/home_tiles_provider.dart';
 import '../../../../shared/widgets/mony_logo.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -228,6 +230,7 @@ class _DashboardViewState extends ConsumerState<_DashboardView> with SingleTicke
     final summaryAsync = ref.watch(transactionSummaryProvider);
     final accountsAsync = ref.watch(accountListProvider);
     final pendingSmsAsync = ref.watch(pendingSmsListProvider);
+    final tilesConfig = ref.watch(homeTilesConfigProvider);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -259,6 +262,27 @@ class _DashboardViewState extends ConsumerState<_DashboardView> with SingleTicke
             icon: Icon(widget.isPrivacyMode ? Icons.visibility_off : Icons.visibility),
             tooltip: 'Toggle Privacy Mode',
             onPressed: widget.onTogglePrivacy,
+          ),
+          InkWell(
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ProfileScreen()),
+            ),
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 4, right: 12),
+              child: CircleAvatar(
+                radius: 16,
+                backgroundColor: const Color(0xFFF48C6A).withOpacity(0.2),
+                child: const Text(
+                  'Z',
+                  style: TextStyle(
+                    color: Color(0xFFF48C6A),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -450,68 +474,65 @@ class _DashboardViewState extends ConsumerState<_DashboardView> with SingleTicke
                 ),
                 const SizedBox(height: 20),
 
-                // MENU TILES SECTION
-                const Text(
-                  'Overview & Quick Tools',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                const SizedBox(height: 12),
-
-                // 2x2 MENU TILES GRID
-                GridView.count(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 1.25,
-                  children: [
-                    // 1. Quick Analytics
-                    _MenuTile(
-                      title: 'Quick Analytics',
-                      subtitle: 'Month Spending & Trends',
-                      icon: Icons.bar_chart,
-                      color: const Color(0xFFF97316), // Warm orange
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const AnalyticsScreen()),
-                      ),
-                    ),
-
-                    // 2. Quick Insights
-                    _MenuTile(
-                      title: 'Quick Insights',
-                      subtitle: 'Savings Rate & Patterns',
-                      icon: Icons.lightbulb_outline,
-                      color: const Color(0xFFFBBF24), // Amber
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const ReportsScreen()),
-                      ),
-                    ),
-
-                    // 3. Analytics & Reports
-                    _MenuTile(
-                      title: 'Reports & Breakdown',
-                      subtitle: 'Category Shares & Filters',
-                      icon: Icons.pie_chart_outline,
-                      color: const Color(0xFF38BDF8), // Sky Cyan
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const ReportsScreen()),
-                      ),
-                    ),
-
-                    // 4. Calendar Heat Map
-                    _MenuTile(
-                      title: 'Calendar Heatmap',
-                      subtitle: 'Color-Coded Daily Spend',
-                      icon: Icons.calendar_month,
-                      color: const Color(0xFFA855F7), // Purple
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const CalendarHeatmapScreen()),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 22),
+                // MENU TILES SECTION (Controlled by Profile Settings)
+                if (tilesConfig.hasAnyVisible) ...[
+                  const Text(
+                    'Overview & Quick Tools',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  const SizedBox(height: 12),
+                  GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 1.25,
+                    children: [
+                      if (tilesConfig.showQuickAnalytics)
+                        _MenuTile(
+                          title: 'Quick Analytics',
+                          subtitle: 'Month Spending & Trends',
+                          icon: Icons.bar_chart,
+                          color: const Color(0xFFF97316),
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const AnalyticsScreen()),
+                          ),
+                        ),
+                      if (tilesConfig.showQuickInsights)
+                        _MenuTile(
+                          title: 'Quick Insights',
+                          subtitle: 'Savings Rate & Patterns',
+                          icon: Icons.lightbulb_outline,
+                          color: const Color(0xFFFBBF24),
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const ReportsScreen()),
+                          ),
+                        ),
+                      if (tilesConfig.showReports)
+                        _MenuTile(
+                          title: 'Reports & Breakdown',
+                          subtitle: 'Category Shares & Filters',
+                          icon: Icons.pie_chart_outline,
+                          color: const Color(0xFF38BDF8),
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const ReportsScreen()),
+                          ),
+                        ),
+                      if (tilesConfig.showCalendarHeatmap)
+                        _MenuTile(
+                          title: 'Calendar Heatmap',
+                          subtitle: 'Color-Coded Daily Spend',
+                          icon: Icons.calendar_month,
+                          color: const Color(0xFFA855F7),
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const CalendarHeatmapScreen()),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 22),
+                ],
 
                 // ACCOUNTS CAROUSEL
                 Row(

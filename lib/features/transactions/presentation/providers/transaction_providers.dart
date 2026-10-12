@@ -29,11 +29,22 @@ final transactionListProvider = StreamProvider<List<Transaction>>((ref) {
   return repo.watchTransactions(filter);
 });
 
-// Periodic summary (monthly / all-time)
-final transactionSummaryProvider = FutureProvider<TransactionSummary>((ref) {
-  final repo = ref.watch(transactionRepositoryProvider);
-  final filter = ref.watch(transactionFilterProvider);
-  return repo.getSummary(startDate: filter.startDate, endDate: filter.endDate);
+// Reactive periodic summary derived directly from transactionListProvider
+final transactionSummaryProvider = StreamProvider<TransactionSummary>((ref) {
+  return ref.watch(transactionListProvider.stream).map((txns) {
+    double income = 0;
+    double expense = 0;
+    for (final t in txns) {
+      if (t.type == TransactionType.income) income += t.amount;
+      if (t.type == TransactionType.expense) expense += t.amount;
+    }
+    return TransactionSummary(
+      totalIncome: income,
+      totalExpense: expense,
+      netSavings: income - expense,
+      transactionCount: txns.length,
+    );
+  });
 });
 
 // Frequent names for autocomplete
