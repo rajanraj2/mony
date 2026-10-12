@@ -31,7 +31,7 @@ class AppTheme {
       brightness: Brightness.light,
       colorScheme: scheme,
       scaffoldBackgroundColor: const Color(0xFFFAF8F5),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: Colors.white,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -65,7 +65,7 @@ class AppTheme {
       brightness: Brightness.dark,
       colorScheme: scheme,
       scaffoldBackgroundColor: bgDarkWarm,
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: cardDarkWarm,
         elevation: 0,
         shape: RoundedRectangleBorder(
