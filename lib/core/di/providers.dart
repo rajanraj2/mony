@@ -1,5 +1,7 @@
 import '../../features/transactions/data/repositories/template_repository_impl.dart';
 import '../../features/transactions/domain/repositories/template_repository.dart';
+import '../../features/portfolio/data/repositories/broker_repository_impl.dart';
+import '../../features/portfolio/domain/repositories/broker_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../database/database.dart';
 import '../../features/accounts/data/datasources/account_dao.dart';
@@ -120,6 +122,10 @@ final smsRepositoryProvider = Provider<ISmsRepository>((ref) {
 
 final importRepositoryProvider = Provider<IImportRepository>((ref) {
   return ImportRepositoryImpl(ref.watch(databaseProvider));
+});
+
+final brokerRepositoryProvider = Provider<IBrokerRepository>((ref) {
+  return BrokerRepositoryImpl();
 });
 
 final portfolioRepositoryProvider = Provider<IPortfolioRepository>((ref) {
