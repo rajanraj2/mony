@@ -6,11 +6,11 @@ import '../../../categories/domain/models/category.dart';
 import '../../../transactions/domain/models/transaction.dart';
 import '../../../transactions/presentation/providers/transaction_providers.dart';
 
-enum FilterMode {
+enum ActiveFilterTab {
   include,
   exclude;
 
-  String get displayName => this == FilterMode.include ? 'Include Selected' : 'Exclude Selected';
+  String get displayName => this == ActiveFilterTab.include ? 'Include (+)' : 'Exclude (−)';
 }
 
 class ReportsScreen extends ConsumerStatefulWidget {
@@ -23,11 +23,15 @@ class ReportsScreen extends ConsumerStatefulWidget {
 class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   int? _selectedYear = DateTime.now().year; // null = all years
   int? _selectedMonth = DateTime.now().month; // null = all months
-  FilterMode _filterMode = FilterMode.include;
+  ActiveFilterTab _activeTab = ActiveFilterTab.include;
 
-  final Set<String> _selectedCategoryIds = {};
-  final Set<String> _selectedBudgetIds = {};
-  final Set<String> _selectedLabels = {};
+  // Simultaneous Include and Exclude Sets
+  final Set<String> _includedCategoryIds = {};
+  final Set<String> _excludedCategoryIds = {};
+  final Set<String> _includedBudgetIds = {};
+  final Set<String> _excludedBudgetIds = {};
+  final Set<String> _includedLabels = {};
+  final Set<String> _excludedLabels = {};
 
   final List<String> _availableLabels = [
     '#essential',
@@ -42,11 +46,14 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     '#online',
   ];
 
-  void _clearFilters() {
+  void _clearAllFilters() {
     setState(() {
-      _selectedCategoryIds.clear();
-      _selectedBudgetIds.clear();
-      _selectedLabels.clear();
+      _includedCategoryIds.clear();
+      _excludedCategoryIds.clear();
+      _includedBudgetIds.clear();
+      _excludedBudgetIds.clear();
+      _includedLabels.clear();
+      _excludedLabels.clear();
     });
   }
 
@@ -56,14 +63,21 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     final categories = ref.watch(categoryListProvider).value ?? [];
     final budgets = ref.watch(budgetListProvider).value ?? [];
 
+    final hasIncluded = _includedCategoryIds.isNotEmpty ||
+        _includedBudgetIds.isNotEmpty ||
+        _includedLabels.isNotEmpty;
+    final hasExcluded = _excludedCategoryIds.isNotEmpty ||
+        _excludedBudgetIds.isNotEmpty ||
+        _excludedLabels.isNotEmpty;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Reports & Category Analytics'),
         actions: [
-          if (_selectedCategoryIds.isNotEmpty || _selectedBudgetIds.isNotEmpty || _selectedLabels.isNotEmpty)
+          if (hasIncluded || hasExcluded)
             TextButton(
-              onPressed: _clearFilters,
-              child: const Text('Reset', style: TextStyle(color: Color(0xFFF87171))),
+              onPressed: _clearAllFilters,
+              child: const Text('Reset All', style: TextStyle(color: Color(0xFFF87171))),
             ),
         ],
       ),
@@ -76,26 +90,30 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             return true;
           }).toList();
 
-          // 2. Filter by Categories / Budgets / Labels with Include vs Exclude Mode
-          final hasCategoryFilter = _selectedCategoryIds.isNotEmpty;
-          final hasBudgetFilter = _selectedBudgetIds.isNotEmpty;
-          final hasLabelFilter = _selectedLabels.isNotEmpty;
-
-          if (hasCategoryFilter || hasBudgetFilter || hasLabelFilter) {
+          // 2. SIMULTANEOUS INCLUDE AND EXCLUDE COMBINED FILTERING
+          if (hasIncluded || hasExcluded) {
             filtered = filtered.where((t) {
-              final matchCat = t.categoryId != null && _selectedCategoryIds.contains(t.categoryId);
-              // Transaction matches budget if budget is linked or its category is covered by selected budget
-              final matchBudget = budgets.any((b) => _selectedBudgetIds.contains(b.id) && b.categoryId == t.categoryId);
-              final matchLabel = t.labels.any((l) => _selectedLabels.contains(l));
+              // A. EXCLUDE RULES: If it matches ANY excluded category, budget, or label, REJECT immediately!
+              final matchesExcludedCat = t.categoryId != null && _excludedCategoryIds.contains(t.categoryId);
+              final matchesExcludedBudget = budgets.any(
+                  (b) => _excludedBudgetIds.contains(b.id) && b.categoryId == t.categoryId);
+              final matchesExcludedLabel = t.labels.any((l) => _excludedLabels.contains(l));
 
-              final matchesAnyFilter = matchCat || matchBudget || matchLabel;
-
-              if (_filterMode == FilterMode.include) {
-                return matchesAnyFilter;
-              } else {
-                // Exclude mode: drop transactions that match excluded criteria
-                return !matchesAnyFilter;
+              if (matchesExcludedCat || matchesExcludedBudget || matchesExcludedLabel) {
+                return false;
               }
+
+              // B. INCLUDE RULES: If inclusion filters are active, it MUST match at least one!
+              if (hasIncluded) {
+                final matchesIncludedCat = t.categoryId != null && _includedCategoryIds.contains(t.categoryId);
+                final matchesIncludedBudget = budgets.any(
+                    (b) => _includedBudgetIds.contains(b.id) && b.categoryId == t.categoryId);
+                final matchesIncludedLabel = t.labels.any((l) => _includedLabels.contains(l));
+
+                return matchesIncludedCat || matchesIncludedBudget || matchesIncludedLabel;
+              }
+
+              return true;
             }).toList();
           }
 
@@ -123,13 +141,13 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
               _buildDateFilters(),
               const SizedBox(height: 14),
 
-              // 2. Include / Exclude Mode Switcher
+              // 2. Simultaneous Include & Exclude Filter Selector
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF161B22),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF30363D)),
+                  color: const Color(0xFF1E1A18),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFF2C2623)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,97 +156,107 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
-                          'Filter Mode:',
+                          'Combined Filtering Engine:',
                           style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white70),
                         ),
-                        SegmentedButton<FilterMode>(
+                        SegmentedButton<ActiveFilterTab>(
                           segments: const [
                             ButtonSegment(
-                              value: FilterMode.include,
-                              label: Text('Include'),
-                              icon: Icon(Icons.check_circle_outline, size: 16),
+                              value: ActiveFilterTab.include,
+                              label: Text('Include (+)'),
+                              icon: Icon(Icons.add_circle_outline, size: 14, color: Color(0xFF4ADE80)),
                             ),
                             ButtonSegment(
-                              value: FilterMode.exclude,
-                              label: Text('Exclude'),
-                              icon: Icon(Icons.remove_circle_outline, size: 16),
+                              value: ActiveFilterTab.exclude,
+                              label: Text('Exclude (−)'),
+                              icon: Icon(Icons.remove_circle_outline, size: 14, color: Color(0xFFF87171)),
                             ),
                           ],
-                          selected: {_filterMode},
-                          onSelectionChanged: (set) => setState(() => _filterMode = set.first),
+                          selected: {_activeTab},
+                          onSelectionChanged: (set) => setState(() => _activeTab = set.first),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
+                    // Active Filter Summary Badge
+                    Row(
+                      children: [
+                        _buildStatusPill(
+                          label: 'Included (${_includedCategoryIds.length + _includedBudgetIds.length + _includedLabels.length})',
+                          color: const Color(0xFF4ADE80),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildStatusPill(
+                          label: 'Excluded (${_excludedCategoryIds.length + _excludedBudgetIds.length + _excludedLabels.length})',
+                          color: const Color(0xFFF87171),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
                     Text(
-                      _filterMode == FilterMode.include
-                          ? 'Showing only transactions matching selected categories, budgets, or labels.'
-                          : 'Excluding selected categories, budgets, and labels from calculations.',
-                      style: const TextStyle(fontSize: 11, color: Color(0xFF8B949E)),
+                      _activeTab == ActiveFilterTab.include
+                          ? 'Select categories, budgets, and labels to INCLUDE in the report:'
+                          : 'Select categories, budgets, and labels to EXCLUDE from the report:',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: _activeTab == ActiveFilterTab.include
+                            ? const Color(0xFF4ADE80)
+                            : const Color(0xFFF87171),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Category Chips for the Active Tab
+                    _buildInteractiveChipsRow(
+                      title: 'Categories',
+                      items: categories.map((c) => _ChipItem(id: c.id, label: c.name, color: Color(c.color))).toList(),
+                      isIncluded: (id) => _includedCategoryIds.contains(id),
+                      isExcluded: (id) => _excludedCategoryIds.contains(id),
+                      onToggle: (id) => _toggleCategory(id),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Budgets Chips for the Active Tab
+                    if (budgets.isNotEmpty) ...[
+                      _buildInteractiveChipsRow(
+                        title: 'Budgets',
+                        items: budgets.map((b) {
+                          final cat = categories.where((c) => c.id == b.categoryId).firstOrNull;
+                          final name = cat != null
+                              ? '${cat.name} (₹${b.amount.toStringAsFixed(0)})'
+                              : 'Budget ₹${b.amount.toStringAsFixed(0)}';
+                          return _ChipItem(id: b.id, label: name, color: const Color(0xFF0284C7));
+                        }).toList(),
+                        isIncluded: (id) => _includedBudgetIds.contains(id),
+                        isExcluded: (id) => _excludedBudgetIds.contains(id),
+                        onToggle: (id) => _toggleBudget(id),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+
+                    // Labels Chips for the Active Tab
+                    _buildInteractiveChipsRow(
+                      title: 'Labels & Hashtags',
+                      items: _availableLabels
+                          .map((l) => _ChipItem(id: l, label: l, color: const Color(0xFF8B5CF6)))
+                          .toList(),
+                      isIncluded: (id) => _includedLabels.contains(id),
+                      isExcluded: (id) => _excludedLabels.contains(id),
+                      onToggle: (id) => _toggleLabel(id),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 14),
-
-              // 3. Category Filter Chips
-              _buildFilterSection(
-                title: 'Categories',
-                items: categories.map((c) => _ChipItem(id: c.id, label: c.name, color: Color(c.color))).toList(),
-                selectedIds: _selectedCategoryIds,
-                onToggle: (id) => setState(() {
-                  if (_selectedCategoryIds.contains(id)) {
-                    _selectedCategoryIds.remove(id);
-                  } else {
-                    _selectedCategoryIds.add(id);
-                  }
-                }),
-              ),
-              const SizedBox(height: 12),
-
-              // 4. Budgets Filter Chips
-              if (budgets.isNotEmpty) ...[
-                _buildFilterSection(
-                  title: 'Budgets',
-                  items: budgets.map((b) {
-                    final cat = categories.where((c) => c.id == b.categoryId).firstOrNull;
-                    final name = cat != null ? '${cat.name} (₹${b.amount.toStringAsFixed(0)})' : 'Budget ₹${b.amount.toStringAsFixed(0)}';
-                    return _ChipItem(id: b.id, label: name, color: const Color(0xFF0284C7));
-                  }).toList(),
-                  selectedIds: _selectedBudgetIds,
-                  onToggle: (id) => setState(() {
-                    if (_selectedBudgetIds.contains(id)) {
-                      _selectedBudgetIds.remove(id);
-                    } else {
-                      _selectedBudgetIds.add(id);
-                    }
-                  }),
-                ),
-                const SizedBox(height: 12),
-              ],
-
-              // 5. Labels & Tags Filter Chips
-              _buildFilterSection(
-                title: 'Labels & Tags',
-                items: _availableLabels.map((l) => _ChipItem(id: l, label: l, color: const Color(0xFF8B5CF6))).toList(),
-                selectedIds: _selectedLabels,
-                onToggle: (id) => setState(() {
-                  if (_selectedLabels.contains(id)) {
-                    _selectedLabels.remove(id);
-                  } else {
-                    _selectedLabels.add(id);
-                  }
-                }),
-              ),
               const SizedBox(height: 18),
 
-              // 6. Report Overview Summary Banner
+              // 3. Report Overview Summary Banner
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF161B22),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFF30363D)),
+                  color: const Color(0xFF1E1A18),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: const Color(0xFF2C2623)),
                 ),
                 child: Column(
                   children: [
@@ -238,11 +266,11 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                         const Text('Report Total Spending', style: TextStyle(color: Color(0xFF8B949E), fontSize: 13)),
                         Text(
                           '₹${totalExpense.toStringAsFixed(2)}',
-                          style: const TextStyle(color: Color(0xFFF87171), fontSize: 20, fontWeight: FontWeight.bold),
+                          style: const TextStyle(color: Color(0xFFF87171), fontSize: 22, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
-                    const Divider(height: 20, color: Color(0xFF30363D)),
+                    const Divider(height: 20, color: Color(0xFF2C2623)),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -277,24 +305,24 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
               ),
               const SizedBox(height: 18),
 
-              // 7. Category Share Breakdown
+              // 4. Category Share Breakdown
               const Text('Category Distribution', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
               const SizedBox(height: 10),
 
               if (catSpendMap.isEmpty)
                 Card(
-                  color: const Color(0xFF161B22),
+                  color: const Color(0xFF1E1A18),
                   child: const Padding(
                     padding: EdgeInsets.all(24),
-                    child: Center(child: Text('No expense data matching current filters')),
+                    child: Center(child: Text('No expense data matching current combined filters')),
                   ),
                 )
               else
                 Card(
-                  color: const Color(0xFF161B22),
+                  color: const Color(0xFF1E1A18),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
-                    side: const BorderSide(color: Color(0xFF30363D)),
+                    side: const BorderSide(color: Color(0xFF2C2623)),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
@@ -337,7 +365,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                                 child: LinearProgressIndicator(
                                   value: pct,
                                   minHeight: 8,
-                                  backgroundColor: const Color(0xFF0D1117),
+                                  backgroundColor: const Color(0xFF131110),
                                   valueColor: AlwaysStoppedAnimation(color),
                                 ),
                               ),
@@ -353,6 +381,81 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
+      ),
+    );
+  }
+
+  void _toggleCategory(String id) {
+    setState(() {
+      if (_activeTab == ActiveFilterTab.include) {
+        if (_includedCategoryIds.contains(id)) {
+          _includedCategoryIds.remove(id);
+        } else {
+          _includedCategoryIds.add(id);
+          _excludedCategoryIds.remove(id);
+        }
+      } else {
+        if (_excludedCategoryIds.contains(id)) {
+          _excludedCategoryIds.remove(id);
+        } else {
+          _excludedCategoryIds.add(id);
+          _includedCategoryIds.remove(id);
+        }
+      }
+    });
+  }
+
+  void _toggleBudget(String id) {
+    setState(() {
+      if (_activeTab == ActiveFilterTab.include) {
+        if (_includedBudgetIds.contains(id)) {
+          _includedBudgetIds.remove(id);
+        } else {
+          _includedBudgetIds.add(id);
+          _excludedBudgetIds.remove(id);
+        }
+      } else {
+        if (_excludedBudgetIds.contains(id)) {
+          _excludedBudgetIds.remove(id);
+        } else {
+          _excludedBudgetIds.add(id);
+          _includedBudgetIds.remove(id);
+        }
+      }
+    });
+  }
+
+  void _toggleLabel(String label) {
+    setState(() {
+      if (_activeTab == ActiveFilterTab.include) {
+        if (_includedLabels.contains(label)) {
+          _includedLabels.remove(label);
+        } else {
+          _includedLabels.add(label);
+          _excludedLabels.remove(label);
+        }
+      } else {
+        if (_excludedLabels.contains(label)) {
+          _excludedLabels.remove(label);
+        } else {
+          _excludedLabels.add(label);
+          _includedLabels.remove(label);
+        }
+      }
+    });
+  }
+
+  Widget _buildStatusPill({required String label, required Color color}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -409,43 +512,61 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       ),
       selected: isSelected,
       onSelected: (_) => onTap(),
-      selectedColor: const Color(0xFFF97316),
-      backgroundColor: const Color(0xFF1E242E),
+      selectedColor: const Color(0xFFF48C6A),
+      backgroundColor: const Color(0xFF1E1A18),
       showCheckmark: false,
     );
   }
 
-  Widget _buildFilterSection({
+  Widget _buildInteractiveChipsRow({
     required String title,
     required List<_ChipItem> items,
-    required Set<String> selectedIds,
-    required Function(String) onToggle,
+    required bool Function(String id) isIncluded,
+    required bool Function(String id) isExcluded,
+    required Function(String id) onToggle,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white70)),
-        const SizedBox(height: 6),
+        Text(title, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white60)),
+        const SizedBox(height: 4),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
             children: items.map((item) {
-              final isSelected = selectedIds.contains(item.id);
+              final inc = isIncluded(item.id);
+              final exc = isExcluded(item.id);
+
+              Color chipColor = const Color(0xFF26211E);
+              Color textColor = Colors.white70;
+              String prefix = '';
+
+              if (inc) {
+                chipColor = const Color(0xFF4ADE80).withOpacity(0.25);
+                textColor = const Color(0xFF4ADE80);
+                prefix = '+ ';
+              } else if (exc) {
+                chipColor = const Color(0xFFF87171).withOpacity(0.25);
+                textColor = const Color(0xFFF87171);
+                prefix = '− ';
+              }
+
               return Padding(
                 padding: const EdgeInsets.only(right: 6),
                 child: FilterChip(
-                  selected: isSelected,
+                  selected: inc || exc,
                   label: Text(
-                    item.label,
+                    '$prefix${item.label}',
                     style: TextStyle(
                       fontSize: 11,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected ? Colors.white : Colors.white70,
+                      fontWeight: (inc || exc) ? FontWeight.bold : FontWeight.normal,
+                      color: textColor,
                     ),
                   ),
-                  selectedColor: item.color,
-                  backgroundColor: const Color(0xFF1E242E),
-                  checkmarkColor: Colors.white,
+                  selectedColor: chipColor,
+                  backgroundColor: const Color(0xFF26211E),
+                  checkmarkColor: inc ? const Color(0xFF4ADE80) : const Color(0xFFF87171),
+                  showCheckmark: inc || exc,
                   onSelected: (_) => onToggle(item.id),
                 ),
               );
