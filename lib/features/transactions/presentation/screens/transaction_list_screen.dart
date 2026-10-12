@@ -20,6 +20,11 @@ class TransactionListScreen extends ConsumerWidget {
         title: const Text('Transactions'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.history),
+            tooltip: 'Time-Machine Rollback',
+            onPressed: () => _showRollbackDialog(context, ref),
+          ),
+          IconButton(
             icon: const Icon(Icons.file_upload_outlined),
             tooltip: 'Import & Reconcile Bank CSV',
             onPressed: () => Navigator.of(context).push(
@@ -128,6 +133,113 @@ class TransactionListScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _showRollbackDialog(BuildContext context, WidgetRef ref) async {
+    final now = DateTime.now();
+    DateTime targetDate = now.subtract(const Duration(days: 2));
+    TimeOfDay targetTime = TimeOfDay.fromDateTime(targetDate);
+
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: targetDate,
+      firstDate: DateTime(2000),
+      lastDate: now,
+      helpText: 'Select Rollback Target Date',
+    );
+    if (pickedDate == null || !context.mounted) return;
+
+    final pickedTime = await showTimePicker(
+      context: context,
+      initialTime: targetTime,
+      helpText: 'Select Rollback Exact Time',
+    );
+    if (pickedTime == null || !context.mounted) return;
+
+    final targetTimestamp = DateTime(
+      pickedDate.year,
+      pickedDate.month,
+      pickedDate.day,
+      pickedTime.hour,
+      pickedTime.minute,
+    );
+
+    final repo = ref.read(transactionRepositoryProvider);
+    final count = await repo.countTransactionsAfter(targetTimestamp);
+
+    if (!context.mounted) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.history, color: Color(0xFFF97316)),
+            SizedBox(width: 8),
+            Text('Confirm Rollback'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Roll back ledger to state at:',
+              style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              DateFormat('EEEE, MMM d, yyyy • HH:mm').format(targetTimestamp),
+              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF38BDF8), fontSize: 15),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444).withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFEF4444).withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.warning_amber_rounded, color: Color(0xFFF87171), size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '$count transactions recorded after this timestamp will be permanently deleted.',
+                      style: const TextStyle(fontSize: 12, color: Color(0xFFF87171), fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: const Color(0xFFEF4444)),
+            child: const Text('Confirm & Roll Back'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      final removed = await repo.rollbackToTimestamp(targetTimestamp);
+      ref.invalidate(transactionListProvider);
+      ref.invalidate(accountListProvider);
+      ref.invalidate(transactionSummaryProvider);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFF15803D),
+            content: Text('Successfully rolled back $removed transactions to ${DateFormat("MMM d, HH:mm").format(targetTimestamp)}.'),
+          ),
+        );
+      }
+    }
+  }
+
   String _formatDateHeader(DateTime d) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -195,9 +307,26 @@ class _TransactionTile extends ConsumerWidget {
                     : Colors.blue,
           ),
         ),
-        title: Text(t.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+        title: Row(
+          children: [
+            Expanded(child: Text(t.name, style: const TextStyle(fontWeight: FontWeight.w600))),
+            if (t.labels.isNotEmpty)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF8B5CF6).withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  t.labels.first,
+                  style: const TextStyle(fontSize: 10, color: Color(0xFFA78BFA), fontWeight: FontWeight.bold),
+                ),
+              ),
+          ],
+        ),
         subtitle: Text(
           [
+            DateFormat('HH:mm').format(t.date),
             if (t.status == TransactionStatus.pending) '⏳ Pending',
             if (t.person != null) 'With ${t.person}',
             if (t.place != null) '@ ${t.place}',

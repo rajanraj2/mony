@@ -10,4 +10,6 @@ abstract class ITransactionRepository {
   Future<void> deleteTransaction(String id);
   Future<TransactionSummary> getSummary({DateTime? startDate, DateTime? endDate});
   Future<List<String>> getFrequentNames({int limit = 10});
+  Future<int> rollbackToTimestamp(DateTime targetTimestamp);
+  Future<int> countTransactionsAfter(DateTime targetTimestamp);
 }

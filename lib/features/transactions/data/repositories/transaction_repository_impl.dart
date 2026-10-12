@@ -54,4 +54,12 @@ class TransactionRepositoryImpl implements ITransactionRepository {
   @override
   Future<List<String>> getFrequentNames({int limit = 10}) =>
       _dao.getFrequentNames(limit: limit);
+
+  @override
+  Future<int> rollbackToTimestamp(DateTime targetTimestamp) =>
+      _dao.rollbackToTimestamp(targetTimestamp);
+
+  @override
+  Future<int> countTransactionsAfter(DateTime targetTimestamp) =>
+      _dao.countTransactionsAfter(targetTimestamp);
 }

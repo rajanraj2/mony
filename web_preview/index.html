@@ -312,6 +312,14 @@
           <span class="material-icons-round">account_circle</span>
           <span id="auth-status-text">Sign In / Cloud Sync</span>
         </button>
+        <button class="btn btn-secondary" onclick="openRollbackModal()" title="Point-in-Time Rollback">
+          <span class="material-icons-round" style="color:#f97316;">history</span>
+          <span>Time-Machine Rollback</span>
+        </button>
+        <button class="btn btn-secondary" onclick="openCalendarModal()" title="Calendar Heatmap">
+          <span class="material-icons-round" style="color:#a855f7;">calendar_month</span>
+          <span>Calendar</span>
+        </button>
         <button class="btn btn-secondary" onclick="togglePrivacy()">
           <span class="material-icons-round" id="privacy-icon">visibility</span>
           <span id="privacy-text">Privacy Mode</span>
@@ -347,6 +355,60 @@
             <div class="card-label">Savings Rate</div>
             <div class="card-value" style="color:#38bdf8;">61.4%</div>
             <div class="card-sub">Target: 50.0%</div>
+          </div>
+        </div>
+
+        <!-- Home Overview Menu Tiles (4 Grid Tiles) -->
+        <div style="margin-bottom:20px;">
+          <h3 style="font-size:14px; font-weight:700; color:#8b949e; text-transform:uppercase; margin-bottom:12px; letter-spacing:0.5px;">Quick Financial Tools</h3>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">
+            <!-- 1. Quick Analytics -->
+            <div class="card" onclick="showTab('analytics')" style="cursor:pointer; border-left:3px solid #f97316; transition:transform 0.2s; padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                <div style="width:34px; height:34px; border-radius:8px; background:rgba(249,115,22,0.15); display:flex; align-items:center; justify-content:center;">
+                  <span class="material-icons-round" style="color:#f97316; font-size:20px;">bar_chart</span>
+                </div>
+                <span class="tag tag-amber" style="font-size:10px;">Analytics</span>
+              </div>
+              <div style="font-weight:700; font-size:14px; color:white;">Quick Analytics</div>
+              <div style="font-size:11px; color:#8b949e; margin-top:2px;">Month spend ₹48.2K • ↗ +12.4% vs last mo</div>
+            </div>
+
+            <!-- 2. Quick Insights -->
+            <div class="card" onclick="showTab('analytics')" style="cursor:pointer; border-left:3px solid #fbbf24; transition:transform 0.2s; padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                <div style="width:34px; height:34px; border-radius:8px; background:rgba(251,191,36,0.15); display:flex; align-items:center; justify-content:center;">
+                  <span class="material-icons-round" style="color:#fbbf24; font-size:20px;">lightbulb</span>
+                </div>
+                <span class="tag tag-green" style="font-size:10px;">Patterns</span>
+              </div>
+              <div style="font-weight:700; font-size:14px; color:white;">Quick Insights</div>
+              <div style="font-size:11px; color:#8b949e; margin-top:2px;">Savings 61.4% • Avg ₹1,550/day • 144 Txns</div>
+            </div>
+
+            <!-- 3. Reports & Categories -->
+            <div class="card" onclick="showTab('analytics')" style="cursor:pointer; border-left:3px solid #38bdf8; transition:transform 0.2s; padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                <div style="width:34px; height:34px; border-radius:8px; background:rgba(56,189,248,0.15); display:flex; align-items:center; justify-content:center;">
+                  <span class="material-icons-round" style="color:#38bdf8; font-size:20px;">pie_chart</span>
+                </div>
+                <span class="tag tag-blue" style="font-size:10px;">Reports</span>
+              </div>
+              <div style="font-weight:700; font-size:14px; color:white;">Reports & Categories</div>
+              <div style="font-size:11px; color:#8b949e; margin-top:2px;">Include / Exclude filter • Category shares</div>
+            </div>
+
+            <!-- 4. Calendar Heatmap -->
+            <div class="card" onclick="openCalendarModal()" style="cursor:pointer; border-left:3px solid #a855f7; transition:transform 0.2s; padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                <div style="width:34px; height:34px; border-radius:8px; background:rgba(168,85,247,0.15); display:flex; align-items:center; justify-content:center;">
+                  <span class="material-icons-round" style="color:#a855f7; font-size:20px;">calendar_month</span>
+                </div>
+                <span class="tag tag-purple" style="font-size:10px;">Heatmap</span>
+              </div>
+              <div style="font-weight:700; font-size:14px; color:white;">Calendar Heatmap</div>
+              <div style="font-size:11px; color:#8b949e; margin-top:2px;">Color-coded daily spend & transaction view</div>
+            </div>
           </div>
         </div>
 
@@ -1147,7 +1209,91 @@
 
 
   <!-- Theme Customizer Modal -->
-    <!-- BROKER CONNECT MODAL -->
+      <!-- CALENDAR HEATMAP MODAL -->
+  <div id="calendar-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#161b22; border:1px solid #30363d; border-radius:16px; width:90%; max-width:540px; padding:24px; box-shadow:0 20px 40px rgba(0,0,0,0.6); max-height:90vh; overflow-y:auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h3 style="font-size:18px; font-weight:700; color:white; display:flex; align-items:center; gap:8px;">
+          <span class="material-icons-round" style="color:#a855f7;">calendar_month</span>
+          <span>Calendar Daily Spend Heatmap</span>
+        </h3>
+        <button onclick="closeCalendarModal()" style="background:none; border:none; color:#8b949e; cursor:pointer;">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <!-- Month Header -->
+      <div style="display:flex; justify-content:space-between; align-items:center; background:#0d1117; padding:10px 16px; border-radius:10px; margin-bottom:14px; border:1px solid #30363d;">
+        <button class="btn btn-secondary" style="padding:4px 8px;" onclick="changeCalMonth(-1)">‹</button>
+        <span id="cal-month-title" style="font-weight:700; font-size:15px; color:white;">October 2026</span>
+        <button class="btn btn-secondary" style="padding:4px 8px;" onclick="changeCalMonth(1)">›</button>
+      </div>
+
+      <!-- Calendar Grid -->
+      <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; text-align:center; margin-bottom:14px;">
+        <span style="font-size:11px; font-weight:700; color:#8b949e;">Mon</span>
+        <span style="font-size:11px; font-weight:700; color:#8b949e;">Tue</span>
+        <span style="font-size:11px; font-weight:700; color:#8b949e;">Wed</span>
+        <span style="font-size:11px; font-weight:700; color:#8b949e;">Thu</span>
+        <span style="font-size:11px; font-weight:700; color:#8b949e;">Fri</span>
+        <span style="font-size:11px; font-weight:700; color:#8b949e;">Sat</span>
+        <span style="font-size:11px; font-weight:700; color:#8b949e;">Sun</span>
+      </div>
+      <div id="cal-grid" style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; margin-bottom:16px;">
+        <!-- Days injected dynamically -->
+      </div>
+
+      <!-- Selected Day Details Card -->
+      <div style="background:#0d1117; border-radius:12px; padding:14px; border:1px solid #30363d;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span id="cal-selected-day-title" style="font-weight:700; font-size:13px; color:white;">Saturday, Oct 10, 2026</span>
+          <span id="cal-selected-net" style="font-weight:700; font-size:13px; color:#f87171;">-₹450.00 Net</span>
+        </div>
+        <div style="font-size:12px; color:#8b949e; line-height:1.6;" id="cal-selected-txns">
+          <div>🍽️ <strong>Zomato</strong> • 21:15 • ₹450.00 <span class="tag tag-amber" style="font-size:9px;">#routine</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIME-MACHINE ROLLBACK MODAL -->
+  <div id="rollback-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#161b22; border:1px solid #30363d; border-radius:16px; width:90%; max-width:480px; padding:24px; box-shadow:0 20px 40px rgba(0,0,0,0.6);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h3 style="font-size:18px; font-weight:700; color:white; display:flex; align-items:center; gap:8px;">
+          <span class="material-icons-round" style="color:#f97316;">history</span>
+          <span>Time-Machine Ledger Rollback</span>
+        </h3>
+        <button onclick="closeRollbackModal()" style="background:none; border:none; color:#8b949e; cursor:pointer;">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <p style="font-size:12px; color:#8b949e; margin-bottom:14px;">
+        Revert your entire financial state to a specific historical date and time. Any entries recorded after this point will be purged.
+      </p>
+
+      <label style="font-size:11px; font-weight:700; color:#8b949e; text-transform:uppercase;">Select Rollback Target Date & Time</label>
+      <input type="datetime-local" id="rollback-datetime-picker" value="2026-10-10T12:00" style="width:100%; padding:10px; background:#0d1117; border:1px solid #30363d; border-radius:8px; color:white; font-family:'JetBrains Mono'; margin:6px 0 14px;">
+
+      <div style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:12px; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:8px; color:#f87171; font-weight:700; font-size:12px;">
+          <span class="material-icons-round" style="font-size:18px;">warning</span>
+          <span>Point-in-Time State Rollback Warning</span>
+        </div>
+        <p style="font-size:11px; color:#fca5a5; margin-top:4px;">
+          Rolling back will remove <strong>2 transactions</strong> recorded after this timestamp (₹2,949.00 total spend).
+        </p>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button class="btn btn-secondary" onclick="closeRollbackModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="confirmRollbackAction()" style="background:#ef4444; border:none;">Confirm & Roll Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BROKER CONNECT MODAL -->
   <div id="broker-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); z-index:9999; align-items:center; justify-content:center;">
     <div style="background:#161b22; border:1px solid #30363d; border-radius:16px; width:90%; max-width:520px; padding:24px; box-shadow:0 20px 40px rgba(0,0,0,0.5);">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">

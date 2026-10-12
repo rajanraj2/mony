@@ -41,6 +41,21 @@ class TransactionDao extends DatabaseAccessor<AppDatabase> with _$TransactionDao
     return (delete(transactionsTable)..where((t) => t.id.equals(id))).go();
   }
 
+  Future<int> rollbackToTimestamp(DateTime targetTimestamp) {
+    final targetMs = targetTimestamp.millisecondsSinceEpoch;
+    return (delete(transactionsTable)..where((t) => t.date.isBiggerThanValue(targetMs))).go();
+  }
+
+  Future<int> countTransactionsAfter(DateTime targetTimestamp) async {
+    final targetMs = targetTimestamp.millisecondsSinceEpoch;
+    final countCol = countAll();
+    final query = selectOnly(transactionsTable)
+      ..addColumns([countCol])
+      ..where(transactionsTable.date.isBiggerThanValue(targetMs));
+    final row = await query.getSingle();
+    return row.read(countCol) ?? 0;
+  }
+
   Future<List<String>> getFrequentNames({int limit = 10}) async {
     final nameCol = transactionsTable.name;
     final countCol = countAll();
@@ -74,7 +89,7 @@ class TransactionDao extends DatabaseAccessor<AppDatabase> with _$TransactionDao
       query.where((t) => t.date.isSmallerOrEqualValue(f.endDate!.millisecondsSinceEpoch));
     }
     if (f.searchQuery != null && f.searchQuery!.isNotEmpty) {
-      query.where((t) => t.name.like('%${f.searchQuery}%') | t.description.like('%${f.searchQuery}%'));
+      query.where((t) => t.name.like('%${f.searchQuery}%') | t.description.like('%${f.searchQuery}%') | t.labels.like('%${f.searchQuery}%'));
     }
     if (f.person != null) {
       query.where((t) => t.person.equals(f.person!));

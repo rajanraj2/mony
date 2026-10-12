@@ -35,6 +35,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   String? _selectedCategoryId;
   String? _selectedBudgetId;
   DateTime _selectedDate = DateTime.now();
+  TimeOfDay _selectedTime = TimeOfDay.now();
   double? _calculatedAmount;
   bool _isLoading = false;
 
@@ -70,6 +71,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       _selectedTransferAccountId = init.transferAccountId;
       _selectedCategoryId = init.categoryId;
       _selectedDate = init.date;
+      _selectedTime = TimeOfDay(hour: init.date.hour, minute: init.date.minute);
       _calculatedAmount = init.amount;
       _selectedLabels.addAll(init.labels);
       for (final l in init.labels) {
@@ -293,6 +295,13 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       return;
     }
 
+    final finalDateTime = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+      _selectedTime.hour,
+      _selectedTime.minute,
+    );
     setState(() => _isLoading = true);
     try {
       if (widget.initialTransaction == null) {
@@ -308,7 +317,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
               description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
               person: _personController.text.trim().isEmpty ? null : _personController.text.trim(),
               place: _placeController.text.trim().isEmpty ? null : _placeController.text.trim(),
-              date: _selectedDate,
+              date: finalDateTime,
               status: _status,
               labels: _selectedLabels,
             );
@@ -324,7 +333,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
           description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
           person: _personController.text.trim().isEmpty ? null : _personController.text.trim(),
           place: _placeController.text.trim().isEmpty ? null : _placeController.text.trim(),
-          date: _selectedDate,
+          date: finalDateTime,
           status: _status,
           labels: _selectedLabels,
         );
@@ -708,22 +717,42 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
               const SizedBox(height: 16),
             ],
 
-            // Date picker
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.calendar_today),
-              title: const Text('Date'),
-              subtitle: Text(DateFormat('EEEE, MMM d, yyyy').format(_selectedDate)),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () async {
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate: _selectedDate,
-                  firstDate: DateTime(2000),
-                  lastDate: DateTime.now().add(const Duration(days: 365)),
-                );
-                if (picked != null) setState(() => _selectedDate = picked);
-              },
+            // Date & Time pickers
+            Row(
+              children: [
+                Expanded(
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.calendar_today),
+                    title: const Text('Date'),
+                    subtitle: Text(DateFormat('MMM d, yyyy').format(_selectedDate)),
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: _selectedDate,
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                      );
+                      if (picked != null) setState(() => _selectedDate = picked);
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.access_time),
+                    title: const Text('Time'),
+                    subtitle: Text(_selectedTime.format(context)),
+                    onTap: () async {
+                      final picked = await showTimePicker(
+                        context: context,
+                        initialTime: _selectedTime,
+                      );
+                      if (picked != null) setState(() => _selectedTime = picked);
+                    },
+                  ),
+                ),
+              ],
             ),
             const Divider(),
 
