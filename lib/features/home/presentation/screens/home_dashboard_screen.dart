@@ -1,3 +1,4 @@
+import '../../../../shared/widgets/mony_logo.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -233,7 +234,7 @@ class _DashboardViewState extends ConsumerState<_DashboardView> with SingleTicke
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('💰 Mony', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const MonyLogo(size: 28, showText: true, fontSize: 20),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
