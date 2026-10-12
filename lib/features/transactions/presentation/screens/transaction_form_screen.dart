@@ -406,7 +406,6 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: templates.map((tpl) {
-                    final isExpense = tpl.type == TransactionType.expense;
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: ActionChip(

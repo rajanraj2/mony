@@ -223,7 +223,7 @@ class _ConnectBrokerSheetState extends ConsumerState<ConnectBrokerSheet>
             child: const Row(
               children: [
                 Icon(Icons.shield_outlined, color: Color(0xFF4ADE80), size: 20),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     'Zero-Cloud Security: Broker API keys & session tokens are encrypted locally on this device. We never transmit your secrets.',
